@@ -1,0 +1,180 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Open+Sans:wght@400;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(210, 40%, 20%);
+  --muted: hsl(210, 40%, 95%);
+  --muted-foreground: hsl(215, 13%, 45%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(210, 40%, 20%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(210, 40%, 20%);
+  --border: hsl(214, 32%, 91%);
+  --input: hsl(214, 32%, 91%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(210, 40%, 96%);
+  --secondary-foreground: hsl(222, 84%, 5%);
+  --accent: hsl(210, 40%, 96%);
+  --accent-foreground: hsl(222, 84%, 5%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(210, 40%, 20%);
+  --radius: 0.5rem;
+  
+  /* Custom colors for the children's app */
+  --coral: hsl(0, 100%, 70%);
+  --turquoise: hsl(174, 72%, 56%);
+  --skyblue: hsl(199, 89%, 48%);
+  --mint: hsl(150, 50%, 60%);
+  --warmyellow: hsl(44, 100%, 80%);
+  --lavender: hsl(300, 47%, 75%);
+  --darkgray: hsl(216, 50%, 16%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 4%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 4%, 16%);
+  --muted-foreground: hsl(240, 5%, 65%);
+  --popover: hsl(240, 10%, 4%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 4%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 4%, 16%);
+  --input: hsl(240, 4%, 16%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(240, 4%, 16%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 4%, 16%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 63%, 31%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 5%, 84%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Open Sans', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Fredoka One', cursive;
+  }
+}
+
+@layer components {
+  .fredoka {
+    font-family: 'Fredoka One', cursive;
+  }
+  
+  .opensans {
+    font-family: 'Open Sans', sans-serif;
+  }
+}
+
+/* Custom animations */
+@keyframes wiggle {
+  0%, 7% { transform: rotateZ(0); }
+  15% { transform: rotateZ(-15deg); }
+  20% { transform: rotateZ(10deg); }
+  25% { transform: rotateZ(-10deg); }
+  30% { transform: rotateZ(6deg); }
+  35% { transform: rotateZ(-4deg); }
+  40%, 100% { transform: rotateZ(0); }
+}
+
+@keyframes bounce-slow {
+  0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); }
+  40%, 43% { transform: translate3d(0, -15px, 0); }
+  70% { transform: translate3d(0, -7px, 0); }
+  90% { transform: translate3d(0, -2px, 0); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .7; }
+}
+
+.animate-wiggle {
+  animation: wiggle 1s ease-in-out infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s infinite;
+}
+
+/* Custom button styles */
+.story-choice-button {
+  transition: all 0.3s ease;
+}
+
+.story-choice-button:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+}
+
+.character-card {
+  transition: all 0.3s ease;
+}
+
+.character-card:hover {
+  transform: scale(1.05);
+}
+
+/* Gradient backgrounds */
+.bg-gradient-coral {
+  background: linear-gradient(135deg, var(--coral), #ff5252);
+}
+
+.bg-gradient-turquoise {
+  background: linear-gradient(135deg, var(--turquoise), #26a69a);
+}
+
+.bg-gradient-skyblue {
+  background: linear-gradient(135deg, var(--skyblue), #1976d2);
+}
+
+.bg-gradient-mint {
+  background: linear-gradient(135deg, var(--mint), #4caf50);
+}
+
+.bg-gradient-warmyellow {
+  background: linear-gradient(135deg, var(--warmyellow), #ffb300);
+}
+
+.bg-gradient-lavender {
+  background: linear-gradient(135deg, var(--lavender), #ba68c8);
+}
+
+/* Text colors */
+.text-coral { color: var(--coral); }
+.text-turquoise { color: var(--turquoise); }
+.text-skyblue { color: var(--skyblue); }
+.text-mint { color: var(--mint); }
+.text-warmyellow { color: var(--warmyellow); }
+.text-lavender { color: var(--lavender); }
+.text-darkgray { color: var(--darkgray); }
+
+/* Background colors */
+.bg-coral { background-color: var(--coral); }
+.bg-turquoise { background-color: var(--turquoise); }
+.bg-skyblue { background-color: var(--skyblue); }
+.bg-mint { background-color: var(--mint); }
+.bg-warmyellow { background-color: var(--warmyellow); }
+.bg-lavender { background-color: var(--lavender); }
+.bg-darkgray { background-color: var(--darkgray); }
