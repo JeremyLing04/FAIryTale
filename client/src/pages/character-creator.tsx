@@ -10,7 +10,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { type InsertCharacter } from "@shared/schema";
-import { Wand2, Plus, X } from "lucide-react";
+import ImageUpload from "@/components/image-upload";
+import { Wand2, Plus, X, Sparkles } from "lucide-react";
 
 export default function CharacterCreator() {
   const [_, setLocation] = useLocation();
@@ -21,22 +22,21 @@ export default function CharacterCreator() {
     name: "",
     type: "explorer",
     personality: "",
-    appearance: {
-      hairColor: "brown",
-      eyeColor: "brown",
-      skinColor: "light",
-      outfit: "casual",
-      accessories: []
-    },
-    powers: []
+    powers: [],
+    imageUrl: ""
   });
 
   const [newPower, setNewPower] = useState("");
   const [step, setStep] = useState<'character' | 'story'>('character');
   const [createdCharacter, setCreatedCharacter] = useState<any>(null);
+  const [customType, setCustomType] = useState("");
+  const [isCustomType, setIsCustomType] = useState(false);
+  const [customGenre, setCustomGenre] = useState("");
+  const [isCustomGenre, setIsCustomGenre] = useState(false);
   const [storyDetails, setStoryDetails] = useState({
     title: "",
-    genre: "adventure"
+    genre: "adventure",
+    imageUrl: "" // for story art
   });
 
   const characterTypes = [
@@ -47,7 +47,8 @@ export default function CharacterCreator() {
     { id: 'unicorn', name: 'Magical Unicorn', icon: '🦄' },
     { id: 'knight', name: 'Noble Knight', icon: '🤺' },
     { id: 'fairy', name: 'Garden Fairy', icon: '🧚' },
-    { id: 'pirate', name: 'Kind Pirate', icon: '🏴‍☠️' }
+    { id: 'pirate', name: 'Kind Pirate', icon: '🏴‍☠️' },
+    { id: 'custom', name: 'Create Your Own', icon: '✨' }
   ];
 
   const createCharacterMutation = useMutation({
@@ -123,6 +124,7 @@ export default function CharacterCreator() {
         currentChapter: 1,
         totalChapters: 5,
         isCompleted: false,
+        imageUrl: storyDetails.imageUrl,
       });
     }
   };
@@ -214,13 +216,17 @@ export default function CharacterCreator() {
                         { id: 'mystery', name: 'Mystery', icon: '🔍', color: 'bg-lavender' },
                         { id: 'friendship', name: 'Friendship', icon: '🤝', color: 'bg-warmyellow' },
                         { id: 'sci-fi', name: 'Space', icon: '🚀', color: 'bg-mint' },
-                        { id: 'magic', name: 'Magic', icon: '✨', color: 'bg-skyblue' }
+                        { id: 'magic', name: 'Magic', icon: '✨', color: 'bg-skyblue' },
+                        { id: 'custom', name: 'Create Your Own', icon: '🎨', color: 'bg-coral' }
                       ].map((genre) => (
                         <Button
                           key={genre.id}
                           type="button"
                           variant={storyDetails.genre === genre.id ? "default" : "outline"}
-                          onClick={() => setStoryDetails({ ...storyDetails, genre: genre.id })}
+                          onClick={() => {
+                            setStoryDetails({ ...storyDetails, genre: genre.id });
+                            setIsCustomGenre(genre.id === 'custom');
+                          }}
                           className={`p-4 h-auto rounded-2xl text-center ${
                             storyDetails.genre === genre.id 
                               ? `${genre.color} text-white hover:opacity-90` 
@@ -234,7 +240,29 @@ export default function CharacterCreator() {
                         </Button>
                       ))}
                     </div>
+                    
+                    {isCustomGenre && (
+                      <div className="mt-4">
+                        <Input
+                          value={customGenre}
+                          onChange={(e) => {
+                            setCustomGenre(e.target.value);
+                            setStoryDetails({ ...storyDetails, genre: e.target.value });
+                          }}
+                          placeholder="What type of adventure do you want to create?"
+                          className="text-lg p-4 rounded-2xl border-2 border-gray-200 focus:border-coral"
+                        />
+                      </div>
+                    )}
                   </div>
+
+                  {/* Story Art Upload */}
+                  <ImageUpload
+                    onImageUpload={(imageUrl) => setStoryDetails({ ...storyDetails, imageUrl })}
+                    currentImage={storyDetails.imageUrl}
+                    label="Upload story artwork (optional):"
+                    placeholder="Add artwork for your story"
+                  />
                 </>
               )}
 
@@ -259,13 +287,16 @@ export default function CharacterCreator() {
                 <Label className="text-lg font-semibold text-darkgray mb-3 block">
                   Choose your character type:
                 </Label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {characterTypes.map((type) => (
                     <Button
                       key={type.id}
                       type="button"
                       variant={character.type === type.id ? "default" : "outline"}
-                      onClick={() => setCharacter({ ...character, type: type.id })}
+                      onClick={() => {
+                        setCharacter({ ...character, type: type.id });
+                        setIsCustomType(type.id === 'custom');
+                      }}
                       className={`p-4 h-auto rounded-2xl text-center ${
                         character.type === type.id 
                           ? 'bg-coral text-white hover:bg-[#ff5252]' 
@@ -279,7 +310,29 @@ export default function CharacterCreator() {
                     </Button>
                   ))}
                 </div>
+                
+                {isCustomType && (
+                  <div className="mt-4">
+                    <Input
+                      value={customType}
+                      onChange={(e) => {
+                        setCustomType(e.target.value);
+                        setCharacter({ ...character, type: e.target.value });
+                      }}
+                      placeholder="What type of character do you want to create?"
+                      className="text-lg p-4 rounded-2xl border-2 border-gray-200 focus:border-coral"
+                    />
+                  </div>
+                )}
               </div>
+
+              {/* Character Image Upload */}
+              <ImageUpload
+                onImageUpload={(imageUrl) => setCharacter({ ...character, imageUrl })}
+                currentImage={character.imageUrl}
+                label="Upload your character's picture:"
+                placeholder="Add a picture of your character"
+              />
 
               {/* Personality */}
               <div>
@@ -336,54 +389,7 @@ export default function CharacterCreator() {
                 </div>
               </div>
 
-              {/* Appearance */}
-              <div>
-                <Label className="text-lg font-semibold text-darkgray mb-3 block">
-                  Customize appearance:
-                </Label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="hairColor" className="text-sm font-medium text-gray-700 mb-2 block">
-                      Hair Color
-                    </Label>
-                    <select
-                      id="hairColor"
-                      value={character.appearance.hairColor}
-                      onChange={(e) => setCharacter({
-                        ...character,
-                        appearance: { ...character.appearance, hairColor: e.target.value }
-                      })}
-                      className="w-full p-3 rounded-2xl border-2 border-gray-200 focus:border-coral"
-                    >
-                      <option value="brown">Brown</option>
-                      <option value="blonde">Blonde</option>
-                      <option value="black">Black</option>
-                      <option value="red">Red</option>
-                      <option value="rainbow">Rainbow</option>
-                    </select>
-                  </div>
-                  <div>
-                    <Label htmlFor="eyeColor" className="text-sm font-medium text-gray-700 mb-2 block">
-                      Eye Color
-                    </Label>
-                    <select
-                      id="eyeColor"
-                      value={character.appearance.eyeColor}
-                      onChange={(e) => setCharacter({
-                        ...character,
-                        appearance: { ...character.appearance, eyeColor: e.target.value }
-                      })}
-                      className="w-full p-3 rounded-2xl border-2 border-gray-200 focus:border-coral"
-                    >
-                      <option value="brown">Brown</option>
-                      <option value="blue">Blue</option>
-                      <option value="green">Green</option>
-                      <option value="hazel">Hazel</option>
-                      <option value="purple">Purple</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
+
                 </>
               )}
 

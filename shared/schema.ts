@@ -5,16 +5,10 @@ import { z } from "zod";
 export const characters = pgTable("characters", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  type: text("type").notNull(), // "explorer", "princess", "superhero", etc.
-  appearance: json("appearance").$type<{
-    hairColor: string;
-    eyeColor: string;
-    skinColor: string;
-    outfit: string;
-    accessories: string[];
-  }>().notNull(),
+  type: text("type").notNull(), // custom or predefined types
   personality: text("personality").notNull(),
   powers: text("powers").array().default([]),
+  imageUrl: text("image_url"), // character image upload
   createdAt: timestamp("created_at").defaultNow(),
 });
 

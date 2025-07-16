@@ -31,8 +31,16 @@ export default function CharacterCard({ character, onSelect, isSelected }: Chara
     <Card className={`character-card cursor-pointer transition-all duration-300 hover:scale-105 ${isSelected ? 'ring-4 ring-coral' : ''}`}>
       <CardContent className={`${getGradientClass(character.type)} rounded-t-lg p-6`}>
         <div className="flex items-center justify-center mb-4">
-          <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
-            <User className="w-10 h-10 text-white" />
+          <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center overflow-hidden">
+            {character.imageUrl ? (
+              <img 
+                src={character.imageUrl} 
+                alt={character.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <User className="w-10 h-10 text-white" />
+            )}
           </div>
         </div>
         <div className="text-center">
