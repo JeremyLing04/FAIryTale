@@ -289,7 +289,7 @@ export default function StoryReader() {
   // Main story interface
   return (
     <div className="min-h-screen py-20">
-      <div className="mb-8 px-4 flex justify-between items-center">
+      <div className="mb-8 px-4 flex justify-start items-center">
         <Button
           onClick={() => {
             if (readingChapter) {
@@ -303,112 +303,6 @@ export default function StoryReader() {
           <ArrowLeft className="mr-2 w-5 h-5" />
           {readingChapter ? "Back to Current Chapter" : "Back to Gallery"}
         </Button>
-
-        {/* Chapter navigation for completed stories */}
-        {story.isCompleted && allChapters && allChapters.length > 1 && (
-          <div className="flex gap-2 items-center">
-            <Button
-              onClick={() => setReadingChapter(Math.max(1, (readingChapter || story.currentChapter) - 1))}
-              disabled={readingChapter === 1}
-              variant="outline"
-              size="sm"
-              className="rounded-full"
-            >
-              Previous
-            </Button>
-            
-            {/* Chapter Dropdown Selector */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="rounded-full px-4">
-                  Chapter {readingChapter || story.currentChapter} of {allChapters.length}
-                  <ChevronDown className="ml-1 w-3 h-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="center" className="max-h-80 overflow-y-auto w-72">
-                {allChapters.map((chapter) => (
-                  <DropdownMenuItem
-                    key={chapter.id}
-                    onClick={() => setReadingChapter(chapter.chapterNumber)}
-                    className={`${
-                      (readingChapter || story.currentChapter) === chapter.chapterNumber
-                        ? "bg-coral text-white"
-                        : ""
-                    } p-3 cursor-pointer`}
-                  >
-                    <div className="flex flex-col w-full">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium">Chapter {chapter.chapterNumber}</span>
-                        <div className="flex gap-1">
-                          {chapter.hasChoices && <span className="text-xs">🌟</span>}
-                          {(readingChapter || story.currentChapter) === chapter.chapterNumber && (
-                            <span className="text-xs bg-white/20 px-1 rounded">Current</span>
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-xs opacity-75 line-clamp-2">
-                        {chapter.content.slice(0, 80)}...
-                      </p>
-                    </div>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <Button
-              onClick={() => setReadingChapter(Math.min(allChapters.length, (readingChapter || story.currentChapter) + 1))}
-              disabled={readingChapter === allChapters.length}
-              variant="outline"
-              size="sm"
-              className="rounded-full"
-            >
-              Next
-            </Button>
-          </div>
-        )}
-
-        {/* Chapter navigation for ongoing stories */}
-        {!story.isCompleted && allChapters && allChapters.length > 1 && (
-          <div className="flex gap-2 items-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="rounded-full px-4">
-                  <BookOpen className="mr-1 w-3 h-3" />
-                  Quick Jump
-                  <ChevronDown className="ml-1 w-3 h-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="center" className="max-h-80 overflow-y-auto w-72">
-                {allChapters.map((chapter) => (
-                  <DropdownMenuItem
-                    key={chapter.id}
-                    onClick={() => setReadingChapter(chapter.chapterNumber)}
-                    className={`${
-                      (readingChapter || story.currentChapter) === chapter.chapterNumber
-                        ? "bg-coral text-white"
-                        : ""
-                    } p-3 cursor-pointer`}
-                  >
-                    <div className="flex flex-col w-full">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium">Chapter {chapter.chapterNumber}</span>
-                        <div className="flex gap-1">
-                          {chapter.hasChoices && <span className="text-xs">🌟</span>}
-                          {story.currentChapter === chapter.chapterNumber && !readingChapter && (
-                            <span className="text-xs bg-white/20 px-1 rounded">Current</span>
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-xs opacity-75 line-clamp-2">
-                        {chapter.content.slice(0, 80)}...
-                      </p>
-                    </div>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
       </div>
 
       <StoryInterface
@@ -421,6 +315,95 @@ export default function StoryReader() {
         isLoading={isGenerating}
         isReadingMode={!!readingChapter}
       />
+
+      {/* Chapter navigation moved under the story panel */}
+      {allChapters && allChapters.length > 1 && (
+        <div className="px-4 mt-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6">
+              <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                {/* Chapter Info */}
+                <div className="flex items-center gap-3">
+                  <BookOpen className="w-5 h-5 text-darkgray" />
+                  <span className="fredoka text-lg text-darkgray">
+                    Chapter {readingChapter || story.currentChapter} of {allChapters.length}
+                  </span>
+                </div>
+
+                {/* Navigation Controls */}
+                <div className="flex gap-2 items-center">
+                  {/* Previous Button */}
+                  <Button
+                    onClick={() => setReadingChapter(Math.max(1, (readingChapter || story.currentChapter) - 1))}
+                    disabled={readingChapter === 1 || (!readingChapter && story.currentChapter === 1)}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full"
+                  >
+                    Previous
+                  </Button>
+                  
+                  {/* Chapter Dropdown Selector */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="rounded-full px-4">
+                        Jump to Chapter
+                        <ChevronDown className="ml-1 w-3 h-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="center" className="max-h-80 overflow-y-auto w-72">
+                      {allChapters.map((chapter) => (
+                        <DropdownMenuItem
+                          key={chapter.id}
+                          onClick={() => setReadingChapter(chapter.chapterNumber)}
+                          className={`${
+                            (readingChapter || story.currentChapter) === chapter.chapterNumber
+                              ? "bg-coral text-white"
+                              : ""
+                          } p-3 cursor-pointer`}
+                        >
+                          <div className="flex flex-col w-full">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-medium">Chapter {chapter.chapterNumber}</span>
+                              <div className="flex gap-1">
+                                {chapter.hasChoices && <span className="text-xs">🌟</span>}
+                                {(readingChapter || story.currentChapter) === chapter.chapterNumber && (
+                                  <span className="text-xs bg-white/20 px-1 rounded">Current</span>
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-xs opacity-75 line-clamp-2">
+                              {chapter.content.slice(0, 80)}...
+                            </p>
+                          </div>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {/* Next Button */}
+                  <Button
+                    onClick={() => {
+                      const maxChapter = story.isCompleted ? allChapters.length : story.currentChapter;
+                      setReadingChapter(Math.min(maxChapter, (readingChapter || story.currentChapter) + 1));
+                    }}
+                    disabled={
+                      (story.isCompleted && readingChapter === allChapters.length) ||
+                      (!story.isCompleted && readingChapter === story.currentChapter) ||
+                      (!readingChapter && !story.isCompleted)
+                    }
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full"
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

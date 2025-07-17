@@ -222,15 +222,15 @@ export default function CharacterCreator() {
                         <Button
                           key={genre.id}
                           type="button"
-                          variant={storyDetails.genre === genre.id ? "default" : "outline"}
+                          variant="outline"
                           onClick={() => {
                             setStoryDetails({ ...storyDetails, genre: genre.id });
                             setIsCustomGenre(genre.id === 'custom');
                           }}
-                          className={`p-4 h-auto rounded-2xl text-center ${
+                          className={`p-4 h-auto rounded-2xl text-center transition-all duration-200 ${
                             storyDetails.genre === genre.id 
-                              ? `${genre.color} text-white hover:opacity-90` 
-                              : 'hover:bg-gray-100'
+                              ? `${genre.color} text-white border-transparent shadow-lg transform scale-105 hover:opacity-90` 
+                              : 'bg-white border-gray-200 text-darkgray hover:bg-gray-50 hover:border-coral hover:shadow-md'
                           }`}
                         >
                           <div>
@@ -292,15 +292,15 @@ export default function CharacterCreator() {
                     <Button
                       key={type.id}
                       type="button"
-                      variant={character.type === type.id ? "default" : "outline"}
+                      variant="outline"
                       onClick={() => {
                         setCharacter({ ...character, type: type.id });
                         setIsCustomType(type.id === 'custom');
                       }}
-                      className={`p-4 h-auto rounded-2xl text-center ${
+                      className={`p-4 h-auto rounded-2xl text-center transition-all duration-200 ${
                         character.type === type.id 
-                          ? 'bg-coral text-white hover:bg-[#ff5252]' 
-                          : 'hover:bg-gray-100'
+                          ? 'bg-coral text-white border-coral hover:bg-[#ff5252] shadow-lg transform scale-105' 
+                          : 'bg-white border-gray-200 text-darkgray hover:bg-gray-50 hover:border-coral hover:shadow-md'
                       }`}
                     >
                       <div>
