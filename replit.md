@@ -105,10 +105,23 @@ The application uses a PostgreSQL database with three main entities:
 
 ### Environment Configuration
 - `NODE_ENV` determines development vs production behavior
-- `DATABASE_URL` for PostgreSQL connection (optional, uses in-memory storage by default)
+- `DATABASE_URL` for PostgreSQL connection with Neon database
 - Ollama installation required for local AI story generation
 - Python with Stable Diffusion dependencies for image generation
+- Optional Python virtual environment support (automatically detected)
 - Replit-specific configurations for cloud deployment
+
+### Python Virtual Environment Setup
+The image generator supports both system Python and virtual environments:
+
+**Option 1: Use System Python**
+- Install dependencies: `pip install -r python_requirements.txt`
+- The system will use `python app.py` directly
+
+**Option 2: Use Virtual Environment (Recommended)**
+- Linux/Mac: Run `bash setup_venv.sh`
+- Windows: Run `setup_venv.bat`
+- The system automatically detects and uses the venv when available
 
 ### Recent Changes
 - **January 16, 2025**: Replaced OpenAI with Ollama+Mistral for story generation

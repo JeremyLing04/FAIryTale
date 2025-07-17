@@ -105,7 +105,7 @@ Format your response as JSON with this structure:
   }
 }
 
-export async function generateStoryImage(description: string, genre: string = "cartoon", characterImageUrl?: string): Promise<string> {
+export async function generateStoryImage(description: string, characterImageUrl?: string, genre: string = "cartoon"): Promise<string> {
   try {
     // Ensure the generated_images directory exists
     const imagesDir = path.join(process.cwd(), 'generated_images');
@@ -116,8 +116,27 @@ export async function generateStoryImage(description: string, genre: string = "c
     const timestamp = Date.now();
     const outputPath = path.join(imagesDir, `story_${timestamp}.png`);
     
-    // Build the command for Python image generator
-    let command = `python app.py --genre ${genre} --description "${description}" --output "${outputPath}"`;
+    // Check if venv exists and build appropriate command
+    const venvPath = path.join(process.cwd(), 'venv');
+    const venvExists = fs.existsSync(venvPath);
+    
+    // Build the command for Python image generator with optional venv activation
+    let command;
+    if (venvExists) {
+      // Use venv if it exists
+      const activateScript = process.platform === 'win32' 
+        ? path.join(venvPath, 'Scripts', 'activate.bat')
+        : path.join(venvPath, 'bin', 'activate');
+      
+      if (process.platform === 'win32') {
+        command = `"${activateScript}" && python app.py --genre ${genre} --description "${description}" --output "${outputPath}"`;
+      } else {
+        command = `source "${activateScript}" && python app.py --genre ${genre} --description "${description}" --output "${outputPath}"`;
+      }
+    } else {
+      // Use system python if no venv
+      command = `python app.py --genre ${genre} --description "${description}" --output "${outputPath}"`;
+    }
     
     // Add character image if provided
     if (characterImageUrl && characterImageUrl.startsWith('data:')) {
@@ -131,7 +150,12 @@ export async function generateStoryImage(description: string, genre: string = "c
     }
     
     console.log('Running image generation command:', command);
-    const { stdout, stderr } = await execAsync(command);
+    console.log('Virtual environment detected:', venvExists);
+    
+    const { stdout, stderr } = await execAsync(command, { 
+      shell: true,
+      timeout: 60000 // 60 second timeout
+    });
     
     if (stderr) {
       console.error('Image generation stderr:', stderr);
@@ -143,7 +167,14 @@ export async function generateStoryImage(description: string, genre: string = "c
     
     // Check if the output file was created
     if (fs.existsSync(outputPath)) {
-      return outputPath;
+      // Clean up temporary files
+      if (characterImageUrl && characterImageUrl.startsWith('data:')) {
+        const tempImagePath = path.join(imagesDir, `temp_${timestamp}.png`);
+        if (fs.existsSync(tempImagePath)) {
+          fs.unlinkSync(tempImagePath);
+        }
+      }
+      return `/generated_images/story_${timestamp}.png`;
     } else {
       console.error('Generated image file not found:', outputPath);
       return characterImageUrl || "";
