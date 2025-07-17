@@ -124,6 +124,11 @@ The image generator supports both system Python and virtual environments:
 - The system automatically detects and uses the venv when available
 
 ### Recent Changes
+- **January 17, 2025**: Fixed navigation routing issues - created dedicated /my-stories and /my-characters pages
+- **January 17, 2025**: Fixed character selection from gallery - now properly navigates to story creation
+- **January 17, 2025**: Implemented character type selection from home page with URL parameter passing
+- **January 17, 2025**: Added text-to-speech functionality with Web Speech API integration
+- **January 17, 2025**: Created local setup documentation with .env.example and README.md
 - **January 16, 2025**: Replaced OpenAI with Ollama+Mistral for story generation
 - **January 16, 2025**: Integrated Python-based Stable Diffusion image generator with IP-Adapter support
 - **January 16, 2025**: Modified choice system to only appear every 2-3 chapters instead of every chapter
