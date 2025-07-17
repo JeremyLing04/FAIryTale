@@ -1,6 +1,6 @@
+import admin from 'firebase-admin';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { credential } from 'firebase-admin';
 
 // Initialize Firebase Admin SDK
 let app;
@@ -11,7 +11,7 @@ try {
     // Use service account key (recommended for production)
     const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
     app = initializeApp({
-      credential: credential.cert(serviceAccount)
+      credential: admin.credential.cert(serviceAccount)
     });
   } else if (process.env.FIREBASE_PROJECT_ID) {
     // Use default credentials (for development)

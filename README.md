@@ -74,18 +74,23 @@ npm run db:push
 
 ### 6. Start the Application
 
-#### Development Mode
+#### Development Mode (Recommended)
 ```bash
 npm run dev
 ```
 
 #### Production Mode
 ```bash
+# Build the application
 npm run build
+
+# Start production server
 npm start
 ```
 
 The application will be available at `http://localhost:5000`
+
+**Note:** For local development, use `npm run dev` as it provides hot reload and better debugging. Use production mode only for deployment.
 
 ## Environment Variables
 
