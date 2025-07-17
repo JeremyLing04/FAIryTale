@@ -6,7 +6,7 @@ import {
   insertStorySchema,
   insertStoryChapterSchema 
 } from "@shared/schema";
-import { generateStoryChapter, generateStoryImage } from "./services/openai";
+import { generateStoryChapter, generateStoryImage } from "./services/ollama";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {

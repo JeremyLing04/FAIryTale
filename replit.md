@@ -81,7 +81,8 @@ The application uses a PostgreSQL database with three main entities:
 - **lucide-react**: Icon library
 
 ### AI Integration
-- **openai**: Official OpenAI API client for story and image generation
+- **ollama**: Local AI model runtime for Mistral-based story generation
+- **python**: Stable Diffusion image generation with IP-Adapter support
 
 ### Development Tools
 - **typescript**: Static type checking
@@ -104,8 +105,18 @@ The application uses a PostgreSQL database with three main entities:
 
 ### Environment Configuration
 - `NODE_ENV` determines development vs production behavior
-- `DATABASE_URL` for PostgreSQL connection
-- `OPENAI_API_KEY` for AI story generation
+- `DATABASE_URL` for PostgreSQL connection (optional, uses in-memory storage by default)
+- Ollama installation required for local AI story generation
+- Python with Stable Diffusion dependencies for image generation
 - Replit-specific configurations for cloud deployment
+
+### Recent Changes
+- **January 16, 2025**: Replaced OpenAI with Ollama+Mistral for story generation
+- **January 16, 2025**: Integrated Python-based Stable Diffusion image generator with IP-Adapter support
+- **January 16, 2025**: Modified choice system to only appear every 2-3 chapters instead of every chapter
+- **January 16, 2025**: Added custom character types and adventure types with user input fields
+- **January 16, 2025**: Implemented character and story artwork image upload (5MB limit)
+- **January 16, 2025**: Increased Express body parser limit to 10MB to handle image uploads
+- **January 16, 2025**: Added continue button for chapters without choices
 
 The application is designed to be easily deployable on platforms like Replit, with automatic environment detection and appropriate build/serve strategies for each environment.

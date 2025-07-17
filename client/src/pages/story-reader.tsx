@@ -105,6 +105,34 @@ export default function StoryReader() {
         chapterNumber: nextChapter,
         previousChoice: choiceText,
         previousContent: currentChapter.content,
+        characterImageUrl: character.imageUrl,
+      });
+
+      toast({
+        title: "Chapter Generated!",
+        description: `Chapter ${nextChapter} is ready to read!`,
+      });
+    } catch (error) {
+      console.error('Error generating chapter:', error);
+    }
+  };
+
+  const handleContinue = async () => {
+    if (!story || !character || !currentChapter) return;
+
+    setIsGenerating(true);
+    
+    const nextChapter = story.currentChapter + 1;
+
+    try {
+      await generateChapterMutation.mutateAsync({
+        characterName: character.name,
+        characterType: character.type,
+        personality: character.personality,
+        genre: story.genre,
+        chapterNumber: nextChapter,
+        previousContent: currentChapter.content,
+        characterImageUrl: character.imageUrl,
       });
 
       toast({
@@ -217,6 +245,7 @@ export default function StoryReader() {
                     personality: character.personality,
                     genre: story.genre,
                     chapterNumber: 1,
+                    characterImageUrl: character.imageUrl,
                   });
                 }}
                 disabled={isGenerating}
@@ -269,6 +298,7 @@ export default function StoryReader() {
         currentChapter={story.currentChapter}
         totalChapters={story.totalChapters}
         onChoiceSelect={handleChoiceSelect}
+        onContinue={handleContinue}
         isLoading={isGenerating}
       />
     </div>

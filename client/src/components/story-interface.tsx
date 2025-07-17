@@ -10,6 +10,7 @@ interface StoryInterfaceProps {
   currentChapter: number;
   totalChapters: number;
   onChoiceSelect: (choice: 'optionA' | 'optionB') => void;
+  onContinue?: () => void;
   isLoading?: boolean;
 }
 
@@ -19,6 +20,7 @@ export default function StoryInterface({
   currentChapter, 
   totalChapters, 
   onChoiceSelect,
+  onContinue,
   isLoading = false 
 }: StoryInterfaceProps) {
   const progressPercentage = (currentChapter / totalChapters) * 100;
@@ -112,6 +114,19 @@ export default function StoryInterface({
                 </div>
               </Button>
             </div>
+          </div>
+        )}
+
+        {/* Continue Button when no choices */}
+        {!chapter.choices && !isLoading && onContinue && (
+          <div className="text-center">
+            <Button
+              onClick={onContinue}
+              className="bg-[hsl(174,72%,56%)] hover:bg-[#26a69a] text-white px-8 py-4 rounded-full text-lg fredoka shadow-lg"
+              disabled={isLoading}
+            >
+              Continue the Adventure
+            </Button>
           </div>
         )}
       </div>
