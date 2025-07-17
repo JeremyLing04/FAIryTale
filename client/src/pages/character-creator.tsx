@@ -18,14 +18,15 @@ export default function CharacterCreator() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Check URL parameters for existing character
+  // Check URL parameters for existing character and type
   const urlParams = new URLSearchParams(window.location.search);
   const characterId = urlParams.get('characterId');
   const urlStep = urlParams.get('step');
+  const urlType = urlParams.get('type');
 
   const [character, setCharacter] = useState<InsertCharacter>({
     name: "",
-    type: "explorer",
+    type: urlType || "explorer",
     personality: "",
     powers: [],
     imageUrl: ""
@@ -57,6 +58,13 @@ export default function CharacterCreator() {
       setStep('story');
     }
   }, [existingCharacter, urlStep]);
+
+  // Handle URL type parameter
+  useEffect(() => {
+    if (urlType === 'custom') {
+      setIsCustomType(true);
+    }
+  }, [urlType]);
 
   const characterTypes = [
     { id: 'explorer', name: 'Brave Explorer', icon: '🏃‍♂️' },

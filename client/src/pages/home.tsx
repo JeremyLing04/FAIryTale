@@ -117,13 +117,19 @@ export default function Home() {
               <h3 className="fredoka text-3xl text-darkgray mb-8">Start by Creating Your Hero!</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {characterTypes.map((character) => (
-                  <div key={character.id} className={`character-card ${character.gradient} rounded-2xl p-6 cursor-pointer`}>
-                    <div className="text-center">
-                      <div className="text-6xl mb-4">{character.icon}</div>
-                      <h4 className="fredoka text-xl text-darkgray mb-2">{character.name}</h4>
-                      <p className="text-darkgray text-sm">{character.description}</p>
+                  <Link key={character.id} href={`/character-creator?type=${character.id}`}>
+                    <div className={`character-card ${character.gradient} rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl`}>
+                      <div className="text-center">
+                        <div className="text-6xl mb-4">{character.icon}</div>
+                        <h4 className="fredoka text-xl text-darkgray mb-2">{character.name}</h4>
+                        <p className="text-darkgray text-sm mb-4">{character.description}</p>
+                        <Button className="bg-white/90 hover:bg-white text-darkgray text-sm px-4 py-2 rounded-full transition-colors">
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Choose This Type
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
               
