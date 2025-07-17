@@ -189,7 +189,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imageUrl,
       };
       
-      const savedChapter = await storage.createChapter(chapterData);
+      const savedChapter = await storage.createStoryChapter(chapterData);
       
       // Update story progress
       await storage.updateStory(storyId, {
