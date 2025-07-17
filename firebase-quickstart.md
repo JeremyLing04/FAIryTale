@@ -27,9 +27,8 @@ You're getting `DATABASE_URL must be set` error because the app expects PostgreS
 Create a `.env` file in your project root:
 
 ```bash
-# Just these 3 lines!
+# Just these 2 lines!
 FIREBASE_PROJECT_ID=your-project-id-here
-OPENAI_API_KEY=your_openai_api_key_here
 USE_FIREBASE=true
 ```
 
