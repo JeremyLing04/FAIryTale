@@ -129,8 +129,3 @@ export class DatabaseStorage implements IStorage {
 }
 
 export const storage = new DatabaseStorage();
-      .orderBy(asc(storyChapters.chapterNumber));
-  }
-}
-
-export const storage = new DatabaseStorage();
