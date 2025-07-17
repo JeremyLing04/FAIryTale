@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Volume2, Heart } from "lucide-react";
+import { Volume2, VolumeX, Heart } from "lucide-react";
 import { type StoryChapter } from "@shared/schema";
 
 interface StoryInterfaceProps {
@@ -26,6 +27,30 @@ export default function StoryInterface({
   isReadingMode = false
 }: StoryInterfaceProps) {
   const progressPercentage = (currentChapter / totalChapters) * 100;
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const handleSpeak = () => {
+    if ('speechSynthesis' in window) {
+      if (isSpeaking) {
+        // Stop speaking
+        window.speechSynthesis.cancel();
+        setIsSpeaking(false);
+      } else {
+        // Start speaking
+        const utterance = new SpeechSynthesisUtterance(chapter.content);
+        utterance.rate = 0.8; // Slightly slower for children
+        utterance.pitch = 1.1; // Slightly higher pitch for friendliness
+        
+        utterance.onstart = () => setIsSpeaking(true);
+        utterance.onend = () => setIsSpeaking(false);
+        utterance.onerror = () => setIsSpeaking(false);
+        
+        window.speechSynthesis.speak(utterance);
+      }
+    } else {
+      alert('Sorry, your browser does not support text-to-speech!');
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-4">
@@ -64,9 +89,18 @@ export default function StoryInterface({
                 <p className="text-lg text-gray-700 leading-relaxed mb-6">
                   {chapter.content}
                 </p>
-                <div className="flex items-center space-x-4 text-coral">
-                  <Volume2 className="w-5 h-5 cursor-pointer hover:text-[#ff5252] transition-colors" />
-                  <span className="text-sm">Click to hear the story!</span>
+                <div 
+                  className="flex items-center space-x-4 text-coral cursor-pointer hover:text-[#ff5252] transition-colors"
+                  onClick={handleSpeak}
+                >
+                  {isSpeaking ? (
+                    <VolumeX className="w-5 h-5" />
+                  ) : (
+                    <Volume2 className="w-5 h-5" />
+                  )}
+                  <span className="text-sm">
+                    {isSpeaking ? 'Click to stop' : 'Click to hear the story!'}
+                  </span>
                 </div>
               </div>
             </div>
