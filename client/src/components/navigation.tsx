@@ -19,13 +19,13 @@ export default function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link href="/gallery" className="text-darkgray hover:text-coral transition-colors font-semibold">
+            <Link href="/my-stories" className="text-darkgray hover:text-coral transition-colors font-semibold">
               <BookOpen className="inline mr-2" size={18} />
               My Stories
             </Link>
-            <Link href="/character-creator" className="text-darkgray hover:text-coral transition-colors font-semibold">
+            <Link href="/my-characters" className="text-darkgray hover:text-coral transition-colors font-semibold">
               <Users className="inline mr-2" size={18} />
-              Characters
+              My Characters
             </Link>
             <Link href="/gallery" className="text-darkgray hover:text-coral transition-colors font-semibold">
               <Image className="inline mr-2" size={18} />
@@ -52,11 +52,11 @@ export default function Navigation() {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t">
             <div className="flex flex-col space-y-4">
-              <Link href="/gallery" className="text-darkgray hover:text-coral transition-colors font-semibold">
+              <Link href="/my-stories" className="text-darkgray hover:text-coral transition-colors font-semibold">
                 My Stories
               </Link>
-              <Link href="/character-creator" className="text-darkgray hover:text-coral transition-colors font-semibold">
-                Characters
+              <Link href="/my-characters" className="text-darkgray hover:text-coral transition-colors font-semibold">
+                My Characters
               </Link>
               <Link href="/gallery" className="text-darkgray hover:text-coral transition-colors font-semibold">
                 Gallery
