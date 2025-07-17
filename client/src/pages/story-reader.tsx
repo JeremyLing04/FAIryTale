@@ -17,6 +17,7 @@ export default function StoryReader() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [readingChapter, setReadingChapter] = useState<number | null>(null);
 
   const { data: story, isLoading: storyLoading } = useQuery<Story>({
     queryKey: ["/api/stories", parseInt(id)],
@@ -27,9 +28,18 @@ export default function StoryReader() {
     enabled: !!story?.characterId,
   });
 
+  // Get the chapter to display (either current chapter or specific reading chapter)
+  const chapterToDisplay = readingChapter || story?.currentChapter;
+  
   const { data: currentChapter, isLoading: chapterLoading } = useQuery<StoryChapter>({
-    queryKey: ["/api/stories", parseInt(id), "chapters", story?.currentChapter],
-    enabled: !!story?.currentChapter,
+    queryKey: ["/api/stories", parseInt(id), "chapters", chapterToDisplay],
+    enabled: !!chapterToDisplay,
+  });
+
+  // Get all chapters for navigation
+  const { data: allChapters } = useQuery<StoryChapter[]>({
+    queryKey: ["/api/stories", parseInt(id), "chapters"],
+    enabled: !!story,
   });
 
   const updateStoryMutation = useMutation({
@@ -162,8 +172,8 @@ export default function StoryReader() {
     );
   }
 
-  // Story completed state
-  if (story.isCompleted) {
+  // Story completed state (only show if not reading a specific chapter)
+  if (story.isCompleted && !readingChapter) {
     return (
       <div className="min-h-screen py-20 px-4">
         <div className="max-w-4xl mx-auto">
@@ -177,22 +187,30 @@ export default function StoryReader() {
               <p className="text-xl text-gray-600 mb-8">
                 Congratulations! You've completed this amazing adventure with {character.name}!
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
                 <Button
-                  onClick={() => setLocation("/gallery")}
-                  className="bg-turquoise hover:bg-[#26a69a] text-white px-8 py-3 rounded-full fredoka"
+                  onClick={() => setReadingChapter(1)}
+                  className="bg-coral hover:bg-[#ff5252] text-white px-8 py-3 rounded-full fredoka"
                 >
                   <BookOpen className="mr-2 w-5 h-5" />
-                  View All Stories
+                  Read from Beginning
                 </Button>
                 <Button
                   onClick={handleStartNewStory}
-                  className="bg-coral hover:bg-[#ff5252] text-white px-8 py-3 rounded-full fredoka"
+                  className="bg-turquoise hover:bg-[#26a69a] text-white px-8 py-3 rounded-full fredoka"
                 >
                   <Sparkles className="mr-2 w-5 h-5" />
                   Start New Adventure
                 </Button>
               </div>
+              <Button
+                onClick={() => setLocation("/gallery")}
+                variant="outline"
+                className="border-gray-300 text-gray-600 hover:bg-gray-50 px-6 py-2 rounded-full fredoka"
+              >
+                <ArrowLeft className="mr-2 w-4 h-4" />
+                Back to Gallery
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -265,24 +283,58 @@ export default function StoryReader() {
   // Main story interface
   return (
     <div className="min-h-screen py-20">
-      <div className="mb-8 px-4">
+      <div className="mb-8 px-4 flex justify-between items-center">
         <Button
-          onClick={() => setLocation("/gallery")}
+          onClick={() => {
+            if (readingChapter) {
+              setReadingChapter(null);
+            } else {
+              setLocation("/gallery");
+            }
+          }}
           className="bg-white/90 hover:bg-white text-darkgray px-6 py-3 rounded-full fredoka"
         >
           <ArrowLeft className="mr-2 w-5 h-5" />
-          Back to Gallery
+          {readingChapter ? "Back to Current Chapter" : "Back to Gallery"}
         </Button>
+
+        {/* Chapter navigation for completed stories */}
+        {story.isCompleted && allChapters && allChapters.length > 1 && (
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setReadingChapter(Math.max(1, (readingChapter || story.currentChapter) - 1))}
+              disabled={readingChapter === 1}
+              variant="outline"
+              size="sm"
+              className="rounded-full"
+            >
+              Previous
+            </Button>
+            <span className="px-3 py-2 bg-white/90 rounded-full text-sm font-medium">
+              Chapter {readingChapter || story.currentChapter} of {allChapters.length}
+            </span>
+            <Button
+              onClick={() => setReadingChapter(Math.min(allChapters.length, (readingChapter || story.currentChapter) + 1))}
+              disabled={readingChapter === allChapters.length}
+              variant="outline"
+              size="sm"
+              className="rounded-full"
+            >
+              Next
+            </Button>
+          </div>
+        )}
       </div>
 
       <StoryInterface
         chapter={currentChapter}
         storyTitle={story.title}
-        currentChapter={story.currentChapter}
+        currentChapter={readingChapter || story.currentChapter}
         totalChapters={story.totalChapters}
-        onChoiceSelect={handleChoiceSelect}
-        onContinue={handleContinue}
+        onChoiceSelect={readingChapter ? undefined : handleChoiceSelect}
+        onContinue={readingChapter ? undefined : handleContinue}
         isLoading={isGenerating}
+        isReadingMode={!!readingChapter}
       />
     </div>
   );

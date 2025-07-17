@@ -9,9 +9,10 @@ interface StoryInterfaceProps {
   storyTitle: string;
   currentChapter: number;
   totalChapters: number;
-  onChoiceSelect: (choice: 'optionA' | 'optionB') => void;
+  onChoiceSelect?: (choice: 'optionA' | 'optionB') => void;
   onContinue?: () => void;
   isLoading?: boolean;
+  isReadingMode?: boolean;
 }
 
 export default function StoryInterface({ 
@@ -21,7 +22,8 @@ export default function StoryInterface({
   totalChapters, 
   onChoiceSelect,
   onContinue,
-  isLoading = false 
+  isLoading = false,
+  isReadingMode = false
 }: StoryInterfaceProps) {
   const progressPercentage = (currentChapter / totalChapters) * 100;
 
@@ -71,8 +73,8 @@ export default function StoryInterface({
           </CardContent>
         </Card>
 
-        {/* Choice Interface */}
-        {chapter.choices && !isLoading && (
+        {/* Choice Interface - only show when not in reading mode */}
+        {chapter.choices && !isLoading && !isReadingMode && onChoiceSelect && (
           <div className="space-y-4">
             <h4 className="fredoka text-2xl text-white text-center mb-6">
               What should happen next?
@@ -117,8 +119,8 @@ export default function StoryInterface({
           </div>
         )}
 
-        {/* Continue Button when no choices */}
-        {!chapter.choices && !isLoading && onContinue && (
+        {/* Continue Button when no choices - only show when not in reading mode */}
+        {!chapter.choices && !isLoading && !isReadingMode && onContinue && (
           <div className="text-center">
             <Button
               onClick={onContinue}
@@ -127,6 +129,17 @@ export default function StoryInterface({
             >
               Continue the Adventure
             </Button>
+          </div>
+        )}
+
+        {/* Reading Mode Message */}
+        {isReadingMode && (
+          <div className="text-center">
+            <div className="bg-white/20 rounded-full px-6 py-3">
+              <span className="fredoka text-white text-lg">
+                📖 Reading Mode - Use navigation buttons above to move between chapters
+              </span>
+            </div>
           </div>
         )}
       </div>
