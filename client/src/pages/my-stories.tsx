@@ -26,7 +26,7 @@ export default function MyStories() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="fredoka text-5xl md:text-6xl text-white mb-4 animate-bounce-slow">
-            My FAIryTale <span className="text-red-400">AI</span> Stories
+            My Stories
           </h1>
           <p className="text-xl text-white/90 max-w-2xl mx-auto">
             Continue your amazing adventures and create new ones!

@@ -13,7 +13,7 @@ Create a `.env` file in your project root with these contents:
 DATABASE_URL="sqlite://./local.db"
 
 # OR for PostgreSQL (more complex setup)
-DATABASE_URL="postgresql://username:password@localhost:5432/fairytale_ai"
+DATABASE_URL="postgresql://username:password@localhost:5432/storymagic"
 
 # Required for AI features
 OPENAI_API_KEY="your_openai_api_key_here"

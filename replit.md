@@ -1,8 +1,8 @@
-# FAIryTale AI - Interactive Children's Story Application
+# StoryMagic - AI-Powered Children's Story Application
 
 ## Overview
 
-FAIryTale AI is a full-stack application that creates personalized, interactive stories for children aged 6-12. The application uses AI to generate unique story content and images based on custom characters that users can create. It features a modern React frontend with a child-friendly design and an Express.js backend with OpenAI integration.
+StoryMagic is a full-stack application that creates personalized, interactive stories for children aged 6-12. The application uses AI to generate unique story content and images based on custom characters that users can create. It features a modern React frontend with a child-friendly design and an Express.js backend with OpenAI integration.
 
 ## User Preferences
 
@@ -24,7 +24,7 @@ Preferred communication style: Simple, everyday language.
 - **Runtime**: Node.js with ES modules
 - **Database ORM**: Drizzle ORM configured for PostgreSQL
 - **Database Provider**: Neon Database (serverless PostgreSQL)
-- **AI Integration**: OpenAI API for story generation and image creation
+- **AI Integration**: Ollama+Mistral for local story generation and Python+Stable Diffusion for image creation
 - **Session Management**: Express sessions with PostgreSQL storage
 
 ### Database Design
@@ -61,7 +61,7 @@ The application uses a PostgreSQL database with three main entities:
 ## Data Flow
 
 1. **Character Creation**: User creates a character → Data validated with Zod → Stored in PostgreSQL via Drizzle ORM
-2. **Story Initialization**: User selects character and story genre → Story record created → First chapter generated via OpenAI API
+2. **Story Initialization**: User selects character and story genre → Story record created → First chapter generated via Ollama+Mistral
 3. **Story Progression**: User makes choices → New chapter generated based on previous content and choice → Chapter stored and displayed
 4. **Story Completion**: Final chapter reached → Story marked as complete → Available in gallery
 
@@ -81,7 +81,7 @@ The application uses a PostgreSQL database with three main entities:
 - **lucide-react**: Icon library
 
 ### AI Integration
-- **ollama**: Local AI model runtime for Mistral-based story generation
+- **ollama**: Local AI model runtime for Mistral-based story generation (replaces OpenAI)
 - **python**: Stable Diffusion image generation with IP-Adapter support
 
 ### Development Tools
@@ -105,8 +105,8 @@ The application uses a PostgreSQL database with three main entities:
 
 ### Environment Configuration
 - `NODE_ENV` determines development vs production behavior
-- `DATABASE_URL` for PostgreSQL connection with Neon database
-- Ollama installation required for local AI story generation
+- `DATABASE_URL` for PostgreSQL connection with Neon database OR `FIREBASE_PROJECT_ID` for Firebase
+- Ollama installation required for local AI story generation (no API key needed)
 - Python with Stable Diffusion dependencies for image generation
 - Optional Python virtual environment support (automatically detected)
 - Replit-specific configurations for cloud deployment
@@ -124,6 +124,10 @@ The image generator supports both system Python and virtual environments:
 - The system automatically detects and uses the venv when available
 
 ### Recent Changes
+- **January 17, 2025**: Fully migrated from OpenAI to Ollama+Mistral for local AI story generation
+- **January 17, 2025**: Added Firebase support as easier database alternative to PostgreSQL
+- **January 17, 2025**: Updated environment configuration to remove OpenAI API key requirement
+- **January 17, 2025**: Created comprehensive Ollama setup guide (ollama-setup.md)
 - **January 17, 2025**: Fixed navigation routing issues - created dedicated /my-stories and /my-characters pages
 - **January 17, 2025**: Fixed character selection from gallery - now properly navigates to story creation
 - **January 17, 2025**: Implemented character type selection from home page with URL parameter passing

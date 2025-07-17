@@ -105,7 +105,7 @@ export default function Home() {
       <section className="relative py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="fredoka text-5xl md:text-7xl text-white mb-6 animate-bounce-slow">
-            Welcome to FAIryTale <span className="text-red-400">AI</span>!
+            Create Your Magic Story!
           </h1>
           <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed">
             Build amazing adventures with AI! Create your own characters and watch them come to life in personalized stories where YOU choose what happens next!

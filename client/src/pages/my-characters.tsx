@@ -33,7 +33,7 @@ export default function MyCharacters() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="fredoka text-5xl md:text-6xl text-white mb-4 animate-bounce-slow">
-            My FAIryTale <span className="text-red-400">AI</span> Characters
+            My Characters
           </h1>
           <p className="text-xl text-white/90 max-w-2xl mx-auto">
             Meet your amazing characters and create new adventures with them!

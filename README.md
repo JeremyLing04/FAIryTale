@@ -1,10 +1,11 @@
-# FAIryTale AI - Local Setup Guide
+# StoryMagic - Local Setup Guide
 
 ## Prerequisites
 
 1. **Node.js** (v18 or higher)
-2. **PostgreSQL** (v12 or higher)
-3. **OpenAI API Key** (for story and image generation)
+2. **Database**: PostgreSQL (v12 or higher) OR Firebase
+3. **Ollama + Mistral** (for local AI story generation)
+4. **Python** (optional, for image generation)
 
 ## Local Development Setup
 
@@ -19,7 +20,7 @@ npm install
 1. Install PostgreSQL on your system
 2. Create a new database:
    ```sql
-   CREATE DATABASE fairytale_ai;
+   CREATE DATABASE storymagic;
    ```
 3. Create a user (optional):
    ```sql
@@ -32,23 +33,46 @@ npm install
 docker run --name storymagic-db -e POSTGRES_DB=storymagic -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres:13
 ```
 
-### 3. Environment Configuration
+### 3. AI Setup - Ollama + Mistral
+
+#### Install Ollama
+1. Download and install Ollama from [ollama.com](https://ollama.com)
+2. Pull the Mistral model:
+   ```bash
+   ollama pull mistral
+   ```
+3. Test it works:
+   ```bash
+   ollama run mistral "Tell me a story"
+   ```
+
+### 4. Environment Configuration
+
+#### Option A: Firebase (Recommended - Easy Setup)
+1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
+2. Enable Firestore Database
+3. Create `.env` file:
+   ```bash
+   FIREBASE_PROJECT_ID=your-project-id
+   USE_FIREBASE=true
+   ```
+
+#### Option B: PostgreSQL (Advanced)
 1. Copy the example environment file:
    ```bash
    cp .env.example .env
    ```
 2. Edit `.env` and fill in your values:
    - `DATABASE_URL`: Your PostgreSQL connection string
-   - `OPENAI_API_KEY`: Your OpenAI API key
    - Other database connection details
 
-### 4. Database Schema Setup
-Run the database migration to set up the schema:
+### 5. Database Schema Setup (PostgreSQL only)
+If using PostgreSQL, run the database migration:
 ```bash
 npm run db:push
 ```
 
-### 5. Start the Application
+### 6. Start the Application
 
 #### Development Mode
 ```bash
@@ -67,8 +91,9 @@ The application will be available at `http://localhost:5000`
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@localhost:5432/storymagic` |
-| `OPENAI_API_KEY` | OpenAI API key for story generation | `sk-...` |
+| `DATABASE_URL` | PostgreSQL connection string (if using PostgreSQL) | `postgresql://user:pass@localhost:5432/storymagic` |
+| `FIREBASE_PROJECT_ID` | Firebase project ID (if using Firebase) | `storymagic-123abc` |
+| `USE_FIREBASE` | Use Firebase instead of PostgreSQL | `true` |
 | `NODE_ENV` | Environment mode | `development` or `production` |
 | `PORT` | Server port | `5000` |
 
@@ -80,10 +105,11 @@ The application will be available at `http://localhost:5000`
 - Verify connection string format
 - Test connection with a PostgreSQL client
 
-### OpenAI API Issues
-- Verify your API key is valid
-- Check your OpenAI account has credits
-- Ensure the API key has the required permissions
+### Ollama/AI Issues
+- Ensure Ollama is installed and running
+- Check Mistral model is downloaded: `ollama list`
+- Test generation: `ollama run mistral "hello"`
+- Check server logs for error messages
 
 ### Port Already in Use
 If port 5000 is already in use, change the PORT in your `.env` file:
@@ -94,7 +120,7 @@ PORT=3000
 ## Features
 
 - **Character Creation**: Design custom characters with personalities and powers
-- **AI Story Generation**: Generate unique stories using OpenAI GPT-4
+- **AI Story Generation**: Generate unique stories using Ollama + Mistral (local AI)
 - **Interactive Stories**: Make choices that affect the story outcome
 - **Text-to-Speech**: Listen to stories with built-in speech synthesis
 - **Image Generation**: AI-generated images for characters and story chapters
@@ -105,5 +131,5 @@ PORT=3000
 - **Frontend**: React 18, TypeScript, Tailwind CSS, shadcn/ui
 - **Backend**: Express.js, Node.js
 - **Database**: PostgreSQL with Drizzle ORM
-- **AI**: OpenAI GPT-4 for stories, DALL-E for images
+- **AI**: Ollama + Mistral for stories, Python + Stable Diffusion for images
 - **Build**: Vite for frontend, ESBuild for backend
