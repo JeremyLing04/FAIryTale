@@ -1,82 +1,53 @@
-import { integer, pgTable, text, boolean, timestamp, json } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-});
-
 export const characters = pgTable("characters", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  type: text("type").notNull(),
+  type: text("type").notNull(), // custom or predefined types
   personality: text("personality").notNull(),
-  powers: text("powers").array().notNull().default([]),
-  stats: json("stats").$type<{
-    courage: number;
-    intelligence: number;
-    kindness: number;
-    creativity: number;
-    strength: number;
-  }>().notNull(),
-  imageUrl: text("image_url"),
+  powers: text("powers").array().default([]),
+  imageUrl: text("image_url"), // character image upload
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const stories = pgTable("stories", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  id: serial("id").primaryKey(),
   title: text("title").notNull(),
-  characterId: integer("character_id").notNull().references(() => characters.id),
-  genre: text("genre").notNull(),
-  currentChapter: integer("current_chapter").notNull().default(1),
-  totalChapters: integer("total_chapters").notNull().default(5),
-  isCompleted: boolean("is_completed").notNull().default(false),
+  genre: text("genre").notNull(), // "adventure", "fantasy", "mystery", etc.
+  characterId: integer("character_id").references(() => characters.id),
+  currentChapter: integer("current_chapter").default(1),
+  totalChapters: integer("total_chapters").default(5),
+  isCompleted: boolean("is_completed").default(false),
   imageUrl: text("image_url"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const storyChapters = pgTable("story_chapters", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  storyId: integer("story_id").notNull().references(() => stories.id),
+  id: serial("id").primaryKey(),
+  storyId: integer("story_id").references(() => stories.id),
   chapterNumber: integer("chapter_number").notNull(),
   content: text("content").notNull(),
   imageUrl: text("image_url"),
   choices: json("choices").$type<{
-    optionA: { 
-      text: string; 
+    optionA: {
+      text: string;
       description: string;
-      statEffects?: { [key: string]: number };
     };
-    optionB: { 
-      text: string; 
+    optionB: {
+      text: string;
       description: string;
-      statEffects?: { [key: string]: number };
     };
-  } | null>(),
+  } | null>(), // null when no choices available
   hasChoices: boolean("has_choices").default(false),
-  isGenerated: boolean("is_generated").default(true),
-  selectedChoice: text("selected_choice", { enum: ['A', 'B'] }),
+  isGenerated: boolean("is_generated").default(true), // track if chapter is dynamically generated
   createdAt: timestamp("created_at").defaultNow(),
 });
-
-export type User = typeof users.$inferSelect;
-export type Character = typeof characters.$inferSelect;
-export type Story = typeof stories.$inferSelect;
-export type StoryChapter = typeof storyChapters.$inferSelect;
 
 export const insertCharacterSchema = createInsertSchema(characters).omit({
   id: true,
   createdAt: true,
-}).extend({
-  stats: z.object({
-    courage: z.number().min(1).max(10),
-    intelligence: z.number().min(1).max(10),
-    kindness: z.number().min(1).max(10),
-    creativity: z.number().min(1).max(10),
-    strength: z.number().min(1).max(10),
-  }),
 });
 
 export const insertStorySchema = createInsertSchema(stories).omit({
@@ -87,21 +58,11 @@ export const insertStorySchema = createInsertSchema(stories).omit({
 export const insertStoryChapterSchema = createInsertSchema(storyChapters).omit({
   id: true,
   createdAt: true,
-}).extend({
-  choices: z.object({
-    optionA: z.object({
-      text: z.string(),
-      description: z.string(),
-      statEffects: z.record(z.number()).optional(),
-    }),
-    optionB: z.object({
-      text: z.string(),
-      description: z.string(),
-      statEffects: z.record(z.number()).optional(),
-    }),
-  }).optional(),
 });
 
+export type Character = typeof characters.$inferSelect;
 export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
+export type Story = typeof stories.$inferSelect;
 export type InsertStory = z.infer<typeof insertStorySchema>;
+export type StoryChapter = typeof storyChapters.$inferSelect;
 export type InsertStoryChapter = z.infer<typeof insertStoryChapterSchema>;

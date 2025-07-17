@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Volume2, VolumeX, Heart } from "lucide-react";
-import { type StoryChapter, type Character } from "@shared/schema";
+import { type StoryChapter } from "@shared/schema";
 
 interface StoryInterfaceProps {
   chapter: StoryChapter;
@@ -14,8 +14,6 @@ interface StoryInterfaceProps {
   onContinue?: () => void;
   isLoading?: boolean;
   isReadingMode?: boolean;
-  character?: Character;
-  onMakeChoice?: (params: { chapterNumber: number; choice: 'A' | 'B' }) => void;
 }
 
 export default function StoryInterface({ 
@@ -26,9 +24,7 @@ export default function StoryInterface({
   onChoiceSelect,
   onContinue,
   isLoading = false,
-  isReadingMode = false,
-  character,
-  onMakeChoice
+  isReadingMode = false
 }: StoryInterfaceProps) {
   const progressPercentage = (currentChapter / totalChapters) * 100;
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -119,99 +115,37 @@ export default function StoryInterface({
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Button
-                onClick={() => {
-                  if (onMakeChoice) {
-                    onMakeChoice({ chapterNumber: currentChapter, choice: 'A' });
-                  } else {
-                    onChoiceSelect('optionA');
-                  }
-                }}
+                onClick={() => onChoiceSelect('optionA')}
                 className="story-choice-button bg-[hsl(44,100%,80%)] hover:bg-[#ffb300] rounded-2xl p-6 h-auto text-left shadow-lg"
                 disabled={isLoading}
               >
                 <div className="flex items-start space-x-4">
                   <div className="text-3xl">🌟</div>
-                  <div className="flex-1">
+                  <div>
                     <h5 className="fredoka text-xl text-darkgray mb-2">
                       {chapter.choices.optionA.text}
                     </h5>
-                    <p className="text-darkgray text-sm mb-3">
+                    <p className="text-darkgray text-sm">
                       {chapter.choices.optionA.description}
                     </p>
-                    
-                    {/* Stat Effects Display */}
-                    {chapter.choices.optionA.statEffects && (
-                      <div className="flex flex-wrap gap-2">
-                        {Object.entries(chapter.choices.optionA.statEffects)
-                          .filter(([_, effect]) => effect !== 0)
-                          .map(([stat, effect]) => (
-                            <div 
-                              key={stat}
-                              className={`text-xs px-2 py-1 rounded-full font-semibold ${
-                                effect > 0 
-                                  ? 'bg-green-100 text-green-700' 
-                                  : 'bg-red-100 text-red-700'
-                              }`}
-                            >
-                              {stat === 'courage' ? '🦁' : 
-                               stat === 'intelligence' ? '🧠' :
-                               stat === 'kindness' ? '💖' :
-                               stat === 'creativity' ? '🎨' :
-                               stat === 'strength' ? '💪' : '⭐'} {effect > 0 ? '+' : ''}{effect}
-                            </div>
-                          ))
-                        }
-                      </div>
-                    )}
                   </div>
                 </div>
               </Button>
 
               <Button
-                onClick={() => {
-                  if (onMakeChoice) {
-                    onMakeChoice({ chapterNumber: currentChapter, choice: 'B' });
-                  } else {
-                    onChoiceSelect('optionB');
-                  }
-                }}
+                onClick={() => onChoiceSelect('optionB')}
                 className="story-choice-button bg-[hsl(300,47%,75%)] hover:bg-[#ba68c8] rounded-2xl p-6 h-auto text-left shadow-lg"
                 disabled={isLoading}
               >
                 <div className="flex items-start space-x-4">
                   <div className="text-3xl">🌈</div>
-                  <div className="flex-1">
+                  <div>
                     <h5 className="fredoka text-xl text-darkgray mb-2">
                       {chapter.choices.optionB.text}
                     </h5>
-                    <p className="text-darkgray text-sm mb-3">
+                    <p className="text-darkgray text-sm">
                       {chapter.choices.optionB.description}
                     </p>
-                    
-                    {/* Stat Effects Display */}
-                    {chapter.choices.optionB.statEffects && (
-                      <div className="flex flex-wrap gap-2">
-                        {Object.entries(chapter.choices.optionB.statEffects)
-                          .filter(([_, effect]) => effect !== 0)
-                          .map(([stat, effect]) => (
-                            <div 
-                              key={stat}
-                              className={`text-xs px-2 py-1 rounded-full font-semibold ${
-                                effect > 0 
-                                  ? 'bg-green-100 text-green-700' 
-                                  : 'bg-red-100 text-red-700'
-                              }`}
-                            >
-                              {stat === 'courage' ? '🦁' : 
-                               stat === 'intelligence' ? '🧠' :
-                               stat === 'kindness' ? '💖' :
-                               stat === 'creativity' ? '🎨' :
-                               stat === 'strength' ? '💪' : '⭐'} {effect > 0 ? '+' : ''}{effect}
-                            </div>
-                          ))
-                        }
-                      </div>
-                    )}
                   </div>
                 </div>
               </Button>

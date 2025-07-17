@@ -14,13 +14,6 @@ export interface StoryGenerationRequest {
   previousChoice?: string;
   previousContent?: string;
   characterImageUrl?: string;
-  stats?: {
-    courage: number;
-    intelligence: number;
-    kindness: number;
-    creativity: number;
-    strength: number;
-  };
 }
 
 export interface StoryChapterResponse {
@@ -29,12 +22,10 @@ export interface StoryChapterResponse {
     optionA: {
       text: string;
       description: string;
-      statEffects?: { [key: string]: number };
     };
     optionB: {
       text: string;
       description: string;
-      statEffects?: { [key: string]: number };
     };
   };
 }
@@ -43,19 +34,13 @@ export async function generateStoryChapter(request: StoryGenerationRequest): Pro
   // Only add choices every 2-3 chapters, not every chapter
   const shouldIncludeChoices = request.chapterNumber % 3 === 0 || request.chapterNumber === 1;
   
-  const statsInfo = request.stats ? 
-    `Character Stats: Courage ${request.stats.courage}/10, Intelligence ${request.stats.intelligence}/10, Kindness ${request.stats.kindness}/10, Creativity ${request.stats.creativity}/10, Strength ${request.stats.strength}/10` : '';
-
   const prompt = `You are a children's story writer creating engaging, age-appropriate stories for kids aged 6-12. 
 Create chapter ${request.chapterNumber} of a ${request.genre} story featuring ${request.characterName}, a ${request.characterType} with the personality: ${request.personality}.
-${statsInfo}
 ${request.previousChoice ? `Previous choice made: ${request.previousChoice}` : ''}
 ${request.previousContent ? `Previous chapter content: ${request.previousContent}` : ''}
 
-IMPORTANT: Incorporate the character's stats into the story - higher courage leads to brave situations, intelligence to puzzles, kindness to helping others, creativity to unique solutions, and strength to physical challenges.
-
 Keep the language simple and positive. Each chapter should be around 150-200 words.
-${shouldIncludeChoices ? 'Include exactly 2 choice options for the reader to continue the story. Each choice should have stat effects (+1 or -1) that make sense with the choice.' : 'This chapter should continue the story naturally without choices.'}
+${shouldIncludeChoices ? 'Include exactly 2 choice options for the reader to continue the story.' : 'This chapter should continue the story naturally without choices.'}
 
 Format your response as JSON with this structure:
 {
@@ -63,13 +48,11 @@ Format your response as JSON with this structure:
   "choices": {
     "optionA": {
       "text": "brief choice text",
-      "description": "what happens if they choose this",
-      "statEffects": {"courage": 1, "intelligence": 0, "kindness": 0, "creativity": 0, "strength": 0}
+      "description": "what happens if they choose this"
     },
     "optionB": {
       "text": "brief choice text", 
-      "description": "what happens if they choose this",
-      "statEffects": {"courage": 0, "intelligence": 1, "kindness": 0, "creativity": 0, "strength": 0}
+      "description": "what happens if they choose this"
     }
   }` : ''}
 }`;

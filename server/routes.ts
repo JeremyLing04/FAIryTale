@@ -82,6 +82,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const updates = req.body;
       const updatedStory = await storage.updateStory(id, updates);
+      if (!updatedStory) {
+        return res.status(404).json({ message: "Story not found" });
+      }
       res.json(updatedStory);
     } catch (error) {
       res.status(500).json({ message: "Failed to update story" });
@@ -107,7 +110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const storyId = parseInt(req.params.storyId);
       const chapterNumber = parseInt(req.params.chapterNumber);
-      const chapter = await storage.getChapter(storyId, chapterNumber);
+      const chapter = await storage.getStoryChapter(storyId, chapterNumber);
       if (!chapter) {
         return res.status(404).json({ message: "Chapter not found" });
       }
@@ -130,7 +133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dynamic story generation route
   app.post("/api/stories/:storyId/generate-chapter", async (req, res) => {
     try {
-      const storyId = req.params.storyId;
+      const storyId = parseInt(req.params.storyId);
       const requestSchema = z.object({
         characterName: z.string(),
         characterType: z.string(),
@@ -139,13 +142,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         chapterNumber: z.number(),
         previousChoice: z.string().optional(),
         characterImageUrl: z.string().optional(),
-        stats: z.object({
-          courage: z.number(),
-          intelligence: z.number(),
-          kindness: z.number(),
-          creativity: z.number(),
-          strength: z.number(),
-        }).optional(),
       });
 
       const request = requestSchema.parse(req.body);
@@ -202,50 +198,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error in generate-chapter:', error);
       res.status(500).json({ message: "Failed to generate story chapter" });
-    }
-  });
-
-  // Route to handle choice selection and stat updates
-  app.post("/api/stories/:storyId/make-choice", async (req, res) => {
-    try {
-      const storyId = parseInt(req.params.storyId);
-      const { chapterNumber, choice, characterId } = req.body;
-      
-      // Get the chapter to check stat effects
-      const chapter = await storage.getChapter(storyId, chapterNumber);
-      if (!chapter || !chapter.choices) {
-        return res.status(404).json({ message: "Chapter or choices not found" });
-      }
-      
-      // Update chapter with selected choice
-      await storage.updateChapter(chapter.id, {
-        selectedChoice: choice
-      });
-      
-      // Apply stat effects to character
-      const choiceData = choice === 'A' ? chapter.choices.optionA : chapter.choices.optionB;
-      if (choiceData.statEffects && characterId) {
-        const character = await storage.getCharacter(parseInt(characterId));
-        if (character && character.stats) {
-          const newStats = { ...character.stats };
-          
-          // Apply stat effects (ensuring stats stay within 1-10 range)
-          Object.entries(choiceData.statEffects).forEach(([stat, effect]) => {
-            if (newStats[stat as keyof typeof newStats] !== undefined) {
-              newStats[stat as keyof typeof newStats] = Math.max(1, Math.min(10, 
-                newStats[stat as keyof typeof newStats] + (effect as number)
-              ));
-            }
-          });
-          
-          await storage.updateCharacter(parseInt(characterId), { stats: newStats });
-        }
-      }
-      
-      res.json({ success: true, statEffects: choiceData.statEffects });
-    } catch (error) {
-      console.error('Error in make-choice:', error);
-      res.status(500).json({ message: "Failed to process choice" });
     }
   });
 
