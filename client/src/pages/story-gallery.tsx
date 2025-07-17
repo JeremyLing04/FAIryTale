@@ -38,7 +38,7 @@ export default function StoryGallery() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="fredoka text-5xl md:text-6xl text-white mb-4 animate-bounce-slow">
-            Your Story Gallery
+            Your FAIryTale <span className="text-red-400">AI</span> Collection
           </h1>
           <p className="text-xl text-white/90 max-w-2xl mx-auto">
             Continue your adventures and meet your amazing characters!

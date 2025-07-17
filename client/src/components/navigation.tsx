@@ -14,7 +14,7 @@ export default function Navigation() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3">
             <Wand2 className="text-3xl text-coral animate-wiggle" />
-            <h1 className="fredoka text-2xl text-darkgray">StoryMagic</h1>
+            <h1 className="fredoka text-2xl text-darkgray">FAIryTale <span className="text-red-500">AI</span></h1>
           </Link>
 
           {/* Desktop Navigation */}

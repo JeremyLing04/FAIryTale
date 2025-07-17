@@ -1,4 +1,4 @@
-# StoryMagic - Local Setup Guide
+# FAIryTale AI - Local Setup Guide
 
 ## Prerequisites
 
@@ -19,7 +19,7 @@ npm install
 1. Install PostgreSQL on your system
 2. Create a new database:
    ```sql
-   CREATE DATABASE storymagic;
+   CREATE DATABASE fairytale_ai;
    ```
 3. Create a user (optional):
    ```sql

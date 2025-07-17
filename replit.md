@@ -1,8 +1,8 @@
-# StoryMagic - AI-Powered Children's Story Application
+# FAIryTale AI - Interactive Children's Story Application
 
 ## Overview
 
-StoryMagic is a full-stack application that creates personalized, interactive stories for children aged 6-12. The application uses AI to generate unique story content and images based on custom characters that users can create. It features a modern React frontend with a child-friendly design and an Express.js backend with OpenAI integration.
+FAIryTale AI is a full-stack application that creates personalized, interactive stories for children aged 6-12. The application uses AI to generate unique story content and images based on custom characters that users can create. It features a modern React frontend with a child-friendly design and an Express.js backend with OpenAI integration.
 
 ## User Preferences
 
