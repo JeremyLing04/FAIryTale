@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { type Story, type Character } from "@shared/schema";
 import StoryCard from "@/components/story-card";
 import CharacterCard from "@/components/character-card";
@@ -9,6 +9,8 @@ import LoadingAnimation from "@/components/loading-animation";
 import { BookOpen, Users, Wand2, Plus } from "lucide-react";
 
 export default function StoryGallery() {
+  const [_, setLocation] = useLocation();
+  
   const { data: stories, isLoading: storiesLoading } = useQuery<Story[]>({
     queryKey: ["/api/stories"],
   });
@@ -16,6 +18,11 @@ export default function StoryGallery() {
   const { data: characters, isLoading: charactersLoading } = useQuery<Character[]>({
     queryKey: ["/api/characters"],
   });
+
+  const handleCharacterSelect = (character: Character) => {
+    // Navigate to character creator with the selected character to create a new story
+    setLocation(`/character-creator?characterId=${character.id}&step=story`);
+  };
 
   if (storiesLoading || charactersLoading) {
     return (
@@ -99,7 +106,7 @@ export default function StoryGallery() {
                 <CharacterCard 
                   key={character.id} 
                   character={character} 
-                  onSelect={() => {}} 
+                  onSelect={handleCharacterSelect} 
                 />
               ))}
             </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,10 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
-import { type InsertCharacter } from "@shared/schema";
+import { type InsertCharacter, type Character } from "@shared/schema";
 import ImageUpload from "@/components/image-upload";
 import { Wand2, Plus, X, Sparkles } from "lucide-react";
 
@@ -17,6 +17,11 @@ export default function CharacterCreator() {
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Check URL parameters for existing character
+  const urlParams = new URLSearchParams(window.location.search);
+  const characterId = urlParams.get('characterId');
+  const urlStep = urlParams.get('step');
 
   const [character, setCharacter] = useState<InsertCharacter>({
     name: "",
@@ -27,7 +32,7 @@ export default function CharacterCreator() {
   });
 
   const [newPower, setNewPower] = useState("");
-  const [step, setStep] = useState<'character' | 'story'>('character');
+  const [step, setStep] = useState<'character' | 'story'>(urlStep === 'story' ? 'story' : 'character');
   const [createdCharacter, setCreatedCharacter] = useState<any>(null);
   const [customType, setCustomType] = useState("");
   const [isCustomType, setIsCustomType] = useState(false);
@@ -38,6 +43,20 @@ export default function CharacterCreator() {
     genre: "adventure",
     imageUrl: "" // for story art
   });
+
+  // Fetch existing character if characterId is provided
+  const { data: existingCharacter } = useQuery<Character>({
+    queryKey: ["/api/characters", characterId],
+    enabled: !!characterId && urlStep === 'story',
+  });
+
+  // Set up character data when existing character is loaded
+  useEffect(() => {
+    if (existingCharacter && urlStep === 'story') {
+      setCreatedCharacter(existingCharacter);
+      setStep('story');
+    }
+  }, [existingCharacter, urlStep]);
 
   const characterTypes = [
     { id: 'explorer', name: 'Brave Explorer', icon: '🏃‍♂️' },
@@ -117,10 +136,11 @@ export default function CharacterCreator() {
         });
         return;
       }
+      const targetCharacter = createdCharacter || existingCharacter;
       createStoryMutation.mutate({
         title: storyDetails.title,
-        genre: storyDetails.genre,
-        characterId: createdCharacter.id,
+        genre: isCustomGenre ? customGenre : storyDetails.genre,
+        characterId: targetCharacter.id,
         currentChapter: 1,
         totalChapters: 5,
         isCompleted: false,
@@ -156,7 +176,7 @@ export default function CharacterCreator() {
           <p className="text-xl text-white/90 max-w-2xl mx-auto">
             {step === 'character' 
               ? 'Design your perfect character and watch them come to life in amazing stories!'
-              : `Now let's create an amazing adventure for ${createdCharacter?.name}!`
+              : `Now let's create an amazing adventure for ${(createdCharacter || existingCharacter)?.name}!`
             }
           </p>
         </div>
@@ -176,17 +196,35 @@ export default function CharacterCreator() {
                   <div className="bg-gradient-to-br from-[hsl(174,72%,56%)] to-blue-200 rounded-2xl p-6 mb-8">
                     <h3 className="fredoka text-2xl text-white mb-4">Your Hero is Ready!</h3>
                     <div className="bg-white/90 rounded-xl p-4">
-                      <h4 className="fredoka text-xl text-darkgray mb-2">{createdCharacter?.name}</h4>
-                      <p className="text-darkgray capitalize">{createdCharacter?.type} • {createdCharacter?.personality}</p>
-                      {createdCharacter?.powers && createdCharacter.powers.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {createdCharacter.powers.map((power: string, index: number) => (
-                            <span key={index} className="bg-turquoise text-white text-xs px-2 py-1 rounded-full">
-                              {power}
-                            </span>
-                          ))}
-                        </div>
-                      )}
+                      {(() => {
+                        const displayCharacter = createdCharacter || existingCharacter;
+                        return (
+                          <>
+                            <div className="flex items-center gap-4 mb-4">
+                              {displayCharacter?.imageUrl && (
+                                <img 
+                                  src={displayCharacter.imageUrl} 
+                                  alt={displayCharacter.name}
+                                  className="w-16 h-16 rounded-full object-cover"
+                                />
+                              )}
+                              <div>
+                                <h4 className="fredoka text-xl text-darkgray mb-2">{displayCharacter?.name}</h4>
+                                <p className="text-darkgray capitalize">{displayCharacter?.type} • {displayCharacter?.personality}</p>
+                              </div>
+                            </div>
+                            {displayCharacter?.powers && displayCharacter.powers.length > 0 && (
+                              <div className="flex flex-wrap gap-2">
+                                {displayCharacter.powers.map((power: string, index: number) => (
+                                  <span key={index} className="bg-turquoise text-white text-xs px-2 py-1 rounded-full">
+                                    {power}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
 
