@@ -21,6 +21,13 @@ export default function ImageUpload({ onImageUpload, currentImage, label, placeh
       return;
     }
 
+    // Check file size (5MB limit)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      alert('File size must be less than 5MB. Please choose a smaller image.');
+      return;
+    }
+
     setUploading(true);
     
     // Convert to base64 for display (in a real app, you'd upload to a service)
@@ -108,6 +115,9 @@ export default function ImageUpload({ onImageUpload, currentImage, label, placeh
                   </p>
                   <p className="text-gray-600 text-sm">
                     Click here or drag and drop an image
+                  </p>
+                  <p className="text-gray-500 text-xs mt-1">
+                    Maximum file size: 5MB
                   </p>
                 </div>
               )}
