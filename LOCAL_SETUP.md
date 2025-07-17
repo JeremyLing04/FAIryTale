@@ -1,0 +1,176 @@
+# StoryMagic - Local Development Setup
+
+## Prerequisites
+
+### Required Software
+1. **Node.js 18+** - [Download from nodejs.org](https://nodejs.org/)
+2. **Ollama** - [Download from ollama.com](https://ollama.com/download)
+3. **Python 3.8+** - [Download from python.org](https://www.python.org/downloads/)
+4. **PostgreSQL** - Either local installation or cloud database
+
+## Quick Start
+
+### 1. Install Dependencies
+```bash
+# Install Node.js dependencies
+npm install
+
+# Install Ollama and pull Mistral model
+ollama pull mistral
+
+# Install Python dependencies (choose one option)
+# Option A: System Python
+pip install -r python_requirements.txt
+
+# Option B: Virtual Environment (Recommended)
+# Linux/Mac:
+bash setup_venv.sh
+# Windows:
+setup_venv.bat
+```
+
+### 2. Database Setup
+
+**Option A: Use Neon Database (Recommended)**
+1. Sign up at [neon.tech](https://neon.tech)
+2. Create a new database
+3. Copy the connection string
+
+**Option B: Local PostgreSQL**
+1. Install PostgreSQL locally
+2. Create a database named `storymagic`
+3. Note your connection details
+
+### 3. Environment Configuration
+Create a `.env` file in the root directory:
+```env
+DATABASE_URL=postgresql://username:password@host:port/database
+NODE_ENV=development
+```
+
+### 4. Database Migration
+```bash
+# Push the database schema
+npm run db:push
+```
+
+### 5. Start Development Server
+```bash
+npm run dev
+```
+
+The application will be available at `http://localhost:5000`
+
+## Project Structure
+
+```
+├── client/               # React frontend
+│   ├── src/
+│   │   ├── components/   # Reusable UI components
+│   │   ├── pages/        # Route pages
+│   │   └── lib/          # Utilities
+├── server/               # Express backend
+│   ├── services/         # AI and image generation
+│   ├── routes.ts         # API endpoints
+│   └── storage.ts        # Database operations
+├── shared/               # Shared types and schemas
+└── generated_images/     # AI-generated story images
+```
+
+## Features
+
+### Character Stats System
+- 6 attributes: courage, kindness, wisdom, creativity, strength, friendship
+- Interactive sliders for character creation
+- Real-time stats display in story reader
+- Choice-based stat modifications
+
+### AI Story Generation
+- Uses Ollama + Mistral for narrative generation
+- Character stats influence story content
+- Dynamic branching based on choices
+- Age-appropriate content for children 6-12
+
+### Image Generation
+- Python-based Stable Diffusion integration
+- Character-consistent artwork using IP-Adapter
+- Automatic image generation for story chapters
+
+## Troubleshooting
+
+### Common Issues
+
+**"ollama: not found"**
+- Install Ollama from ollama.com
+- Run `ollama pull mistral` to download the model
+- Ensure Ollama is in your system PATH
+
+**"python: not found"**
+- Install Python 3.8+ from python.org
+- On Windows, ensure Python is added to PATH during installation
+- Try `python3` instead of `python` on Linux/Mac
+
+**Database connection errors**
+- Verify your DATABASE_URL is correct
+- Ensure the database server is running
+- Check firewall settings for local PostgreSQL
+
+**Image generation fails**
+- Install Python dependencies: `pip install -r python_requirements.txt`
+- For GPU acceleration, install CUDA-compatible PyTorch
+- Virtual environment setup is recommended to avoid conflicts
+
+### Development Commands
+
+```bash
+# Start development server
+npm run dev
+
+# Database operations
+npm run db:push          # Push schema changes
+npm run db:studio        # Open database GUI
+
+# Build for production
+npm run build
+
+# Type checking
+npm run type-check
+```
+
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `NODE_ENV` | No | Environment (development/production) |
+| `OPENAI_API_KEY` | No | Optional for fallback AI generation |
+
+## Dependencies Overview
+
+### Frontend
+- React 18 with TypeScript
+- Vite for development and building
+- TailwindCSS + shadcn/ui components
+- TanStack React Query for state management
+
+### Backend
+- Express.js with TypeScript
+- Drizzle ORM for database operations
+- Neon Database (serverless PostgreSQL)
+- Zod for validation
+
+### AI & Image Generation
+- Ollama + Mistral for story generation
+- Python + Stable Diffusion for images
+- IP-Adapter for character consistency
+
+## Contributing
+
+1. Follow the existing code style
+2. Update replit.md when making architectural changes
+3. Test character creation and story generation flows
+4. Ensure all TypeScript types are properly defined
+
+## Support
+
+For setup issues or questions, check the troubleshooting section above or refer to the main documentation in `replit.md`.

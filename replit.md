@@ -39,7 +39,9 @@ The application uses a PostgreSQL database with three main entities:
 - Interactive character builder with predefined types (explorer, princess, superhero, etc.)
 - Customizable appearance attributes (hair color, eye color, skin tone, outfit)
 - Personality traits and special powers
-- Visual character cards with themed color gradients
+- Character stats system with 6 attributes: courage, kindness, wisdom, creativity, strength, friendship
+- Visual character cards with themed color gradients and mini stats display
+- Character stats editor with sliders for setting initial values (0-100 scale)
 
 ### AI Story Generation
 - OpenAI GPT-4o integration for generating age-appropriate story content
@@ -49,8 +51,10 @@ The application uses a PostgreSQL database with three main entities:
 
 ### Interactive Story Reader
 - Chapter-based story progression with visual progress tracking
-- Multiple choice selections that influence story direction
+- Multiple choice selections that influence story direction and character stats
+- Character stats sidebar showing real-time attribute values
 - Image display for each chapter
+- Choice system with stat change indicators (+/- courage, kindness, etc.)
 - Responsive design for various screen sizes
 
 ### Story Management
@@ -124,6 +128,12 @@ The image generator supports both system Python and virtual environments:
 - The system automatically detects and uses the venv when available
 
 ### Recent Changes
+- **January 17, 2025**: Added comprehensive character stats system with 6 attributes (courage, kindness, wisdom, creativity, strength, friendship)
+- **January 17, 2025**: Implemented character stats editor with sliders in character creator
+- **January 17, 2025**: Added character stats display on character cards and story reader sidebar
+- **January 17, 2025**: Updated AI story generation to include character stats in prompts
+- **January 17, 2025**: Created choice system that affects character stats with dynamic +/- changes
+- **January 17, 2025**: Added API route for updating character stats when story choices are made
 - **January 16, 2025**: Replaced OpenAI with Ollama+Mistral for story generation
 - **January 16, 2025**: Integrated Python-based Stable Diffusion image generator with IP-Adapter support
 - **January 16, 2025**: Modified choice system to only appear every 2-3 chapters instead of every chapter
