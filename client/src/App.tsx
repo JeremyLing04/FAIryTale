@@ -8,6 +8,8 @@ import Home from "@/pages/home";
 import CharacterCreator from "@/pages/character-creator";
 import StoryReader from "@/pages/story-reader";
 import StoryGallery from "@/pages/story-gallery";
+import MyStories from "@/pages/my-stories";
+import MyCharacters from "@/pages/my-characters";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -17,6 +19,8 @@ function Router() {
       <Route path="/character-creator" component={CharacterCreator} />
       <Route path="/story/:id" component={StoryReader} />
       <Route path="/gallery" component={StoryGallery} />
+      <Route path="/my-stories" component={MyStories} />
+      <Route path="/my-characters" component={MyCharacters} />
       <Route component={NotFound} />
     </Switch>
   );
