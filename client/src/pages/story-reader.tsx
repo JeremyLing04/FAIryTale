@@ -42,37 +42,22 @@ export default function StoryReader() {
     },
   });
 
-  const createChapterMutation = useMutation({
-    mutationFn: async (chapter: Partial<StoryChapter>) => {
-      const response = await apiRequest("POST", `/api/stories/${id}/chapters`, chapter);
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/stories", parseInt(id)] });
-      setIsGenerating(false);
-    },
-  });
+
 
   const generateChapterMutation = useMutation({
     mutationFn: async (request: any) => {
-      const response = await apiRequest("POST", "/api/generate-chapter", request);
+      const response = await apiRequest("POST", `/api/stories/${id}/generate-chapter`, request);
       return response.json();
     },
     onSuccess: (data) => {
-      const nextChapter = (story?.currentChapter || 1) + 1;
+      // Invalidate queries to refetch updated story and chapters
+      queryClient.invalidateQueries({ queryKey: ["/api/stories", parseInt(id)] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stories", parseInt(id), "chapters"] });
       
-      // Create the new chapter
-      createChapterMutation.mutate({
-        chapterNumber: nextChapter,
-        content: data.content,
-        imageUrl: data.imageUrl,
-        choices: data.choices,
-      });
-
-      // Update story progress
-      updateStoryMutation.mutate({
-        currentChapter: nextChapter,
-        isCompleted: nextChapter >= (story?.totalChapters || 5),
+      setIsGenerating(false);
+      toast({
+        title: "Chapter Generated!",
+        description: `Chapter ${data.chapterNumber} is ready to read!`,
       });
     },
     onError: (error) => {
@@ -104,7 +89,6 @@ export default function StoryReader() {
         genre: story.genre,
         chapterNumber: nextChapter,
         previousChoice: choiceText,
-        previousContent: currentChapter.content,
         characterImageUrl: character.imageUrl,
       });
 
@@ -131,7 +115,6 @@ export default function StoryReader() {
         personality: character.personality,
         genre: story.genre,
         chapterNumber: nextChapter,
-        previousContent: currentChapter.content,
         characterImageUrl: character.imageUrl,
       });
 

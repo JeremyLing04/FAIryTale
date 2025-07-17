@@ -34,14 +34,14 @@ export const storyChapters = pgTable("story_chapters", {
     optionA: {
       text: string;
       description: string;
-      nextChapter?: number;
     };
     optionB: {
       text: string;
       description: string;
-      nextChapter?: number;
     };
-  }>(),
+  } | null>(), // null when no choices available
+  hasChoices: boolean("has_choices").default(false),
+  isGenerated: boolean("is_generated").default(true), // track if chapter is dynamically generated
   createdAt: timestamp("created_at").defaultNow(),
 });
 

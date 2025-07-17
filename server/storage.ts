@@ -104,4 +104,67 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+import { db } from "./db";
+import { eq, and, asc } from "drizzle-orm";
+
+export class DatabaseStorage implements IStorage {
+  async createCharacter(insertCharacter: InsertCharacter): Promise<Character> {
+    const [character] = await db.insert(characters).values(insertCharacter).returning();
+    return character;
+  }
+
+  async getCharacter(id: number): Promise<Character | undefined> {
+    const [character] = await db.select().from(characters).where(eq(characters.id, id));
+    return character || undefined;
+  }
+
+  async getAllCharacters(): Promise<Character[]> {
+    return await db.select().from(characters);
+  }
+
+  async createStory(insertStory: InsertStory): Promise<Story> {
+    const [story] = await db.insert(stories).values(insertStory).returning();
+    return story;
+  }
+
+  async getStory(id: number): Promise<Story | undefined> {
+    const [story] = await db.select().from(stories).where(eq(stories.id, id));
+    return story || undefined;
+  }
+
+  async getAllStories(): Promise<Story[]> {
+    return await db.select().from(stories);
+  }
+
+  async updateStory(id: number, updates: Partial<Story>): Promise<Story | undefined> {
+    const [story] = await db.update(stories)
+      .set(updates)
+      .where(eq(stories.id, id))
+      .returning();
+    return story || undefined;
+  }
+
+  async createStoryChapter(insertChapter: InsertStoryChapter): Promise<StoryChapter> {
+    const [chapter] = await db.insert(storyChapters).values(insertChapter).returning();
+    return chapter;
+  }
+
+  async getStoryChapter(storyId: number, chapterNumber: number): Promise<StoryChapter | undefined> {
+    const [chapter] = await db.select()
+      .from(storyChapters)
+      .where(and(
+        eq(storyChapters.storyId, storyId),
+        eq(storyChapters.chapterNumber, chapterNumber)
+      ));
+    return chapter || undefined;
+  }
+
+  async getStoryChapters(storyId: number): Promise<StoryChapter[]> {
+    return await db.select()
+      .from(storyChapters)
+      .where(eq(storyChapters.storyId, storyId))
+      .orderBy(asc(storyChapters.chapterNumber));
+  }
+}
+
+export const storage = new DatabaseStorage();

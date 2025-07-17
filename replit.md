@@ -118,5 +118,8 @@ The application uses a PostgreSQL database with three main entities:
 - **January 16, 2025**: Implemented character and story artwork image upload (5MB limit)
 - **January 16, 2025**: Increased Express body parser limit to 10MB to handle image uploads
 - **January 16, 2025**: Added continue button for chapters without choices
+- **January 16, 2025**: Created PostgreSQL database and migrated from in-memory storage
+- **January 16, 2025**: Implemented fully dynamic chapter generation system with database persistence
+- **January 16, 2025**: Updated story progression to generate chapters on-demand instead of pre-generating
 
 The application is designed to be easily deployable on platforms like Replit, with automatic environment detection and appropriate build/serve strategies for each environment.

@@ -130,9 +130,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI story generation route
-  app.post("/api/generate-chapter", async (req, res) => {
+  // Dynamic story generation route
+  app.post("/api/stories/:storyId/generate-chapter", async (req, res) => {
     try {
+      const storyId = parseInt(req.params.storyId);
       const requestSchema = z.object({
         characterName: z.string(),
         characterType: z.string(),
@@ -140,21 +141,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
         genre: z.string(),
         chapterNumber: z.number(),
         previousChoice: z.string().optional(),
-        previousContent: z.string().optional(),
+        characterImageUrl: z.string().optional(),
       });
 
       const request = requestSchema.parse(req.body);
-      const storyChapter = await generateStoryChapter(request);
+      
+      // Get story and existing chapters for context
+      const story = await storage.getStory(storyId);
+      if (!story) {
+        return res.status(404).json({ message: "Story not found" });
+      }
+      
+      const existingChapters = await storage.getStoryChapters(storyId);
+      const previousContent = existingChapters
+        .map(ch => ch.content)
+        .join('\n\n');
+      
+      // Generate new chapter with context
+      const storyChapter = await generateStoryChapter({
+        ...request,
+        previousContent,
+      });
+      
+      // Determine if this chapter should have choices (every 2-3 chapters)
+      const hasChoices = request.chapterNumber % 3 === 0 && request.chapterNumber < 8;
       
       // Generate image for the chapter
-      const imageUrl = await generateStoryImage(storyChapter.content);
+      let imageUrl = null;
+      try {
+        imageUrl = await generateStoryImage(storyChapter.content, request.characterImageUrl, request.genre);
+      } catch (imageError) {
+        console.error('Failed to generate image:', imageError);
+      }
       
-      res.json({
-        ...storyChapter,
-        imageUrl
+      // Save chapter to database
+      const chapterData = {
+        storyId,
+        chapterNumber: request.chapterNumber,
+        content: storyChapter.content,
+        choices: hasChoices ? storyChapter.choices : null,
+        hasChoices,
+        isGenerated: true,
+        imageUrl,
+      };
+      
+      const savedChapter = await storage.createStoryChapter(chapterData);
+      
+      // Update story progress
+      await storage.updateStory(storyId, {
+        currentChapter: request.chapterNumber,
+        totalChapters: Math.max(story.totalChapters || 5, request.chapterNumber + 2),
+        isCompleted: request.chapterNumber >= 8,
       });
+      
+      res.json(savedChapter);
     } catch (error) {
-      console.error('Error in /api/generate-chapter:', error);
+      console.error('Error in generate-chapter:', error);
       res.status(500).json({ message: "Failed to generate story chapter" });
     }
   });
