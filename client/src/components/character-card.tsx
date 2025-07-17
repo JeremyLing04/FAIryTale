@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { type Character } from "@shared/schema";
 import { User, Sparkles } from "lucide-react";
+import CharacterStats from "@/components/character-stats";
 
 interface CharacterCardProps {
   character: Character;
@@ -56,6 +57,9 @@ export default function CharacterCard({ character, onSelect, isSelected }: Chara
               ))}
             </div>
           )}
+          <div className="mb-4">
+            <CharacterStats character={character} showTitle={false} compact={true} />
+          </div>
           <Button 
             onClick={() => onSelect(character)}
             className="w-full bg-white/90 text-darkgray hover:bg-white transition-colors"

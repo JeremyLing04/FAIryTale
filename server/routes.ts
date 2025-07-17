@@ -142,6 +142,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         chapterNumber: z.number(),
         previousChoice: z.string().optional(),
         characterImageUrl: z.string().optional(),
+        characterStats: z.object({
+          courage: z.number().optional(),
+          kindness: z.number().optional(),
+          wisdom: z.number().optional(),
+          creativity: z.number().optional(),
+          strength: z.number().optional(),
+          friendship: z.number().optional(),
+        }).optional(),
       });
 
       const request = requestSchema.parse(req.body);
@@ -198,6 +206,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error in generate-chapter:', error);
       res.status(500).json({ message: "Failed to generate story chapter" });
+    }
+  });
+
+  // Update character stats route
+  app.patch("/api/characters/:characterId/stats", async (req, res) => {
+    try {
+      const characterId = parseInt(req.params.characterId);
+      const statsSchema = z.object({
+        courage: z.number().optional(),
+        kindness: z.number().optional(),
+        wisdom: z.number().optional(),
+        creativity: z.number().optional(),
+        strength: z.number().optional(),
+        friendship: z.number().optional(),
+      });
+      
+      const statChanges = statsSchema.parse(req.body);
+      
+      // Get current character
+      const character = await storage.getCharacter(characterId);
+      if (!character) {
+        return res.status(404).json({ message: "Character not found" });
+      }
+      
+      // Apply stat changes with bounds (0-100)
+      const updatedStats = {
+        courage: Math.max(0, Math.min(100, (character.courage || 50) + (statChanges.courage || 0))),
+        kindness: Math.max(0, Math.min(100, (character.kindness || 50) + (statChanges.kindness || 0))),
+        wisdom: Math.max(0, Math.min(100, (character.wisdom || 50) + (statChanges.wisdom || 0))),
+        creativity: Math.max(0, Math.min(100, (character.creativity || 50) + (statChanges.creativity || 0))),
+        strength: Math.max(0, Math.min(100, (character.strength || 50) + (statChanges.strength || 0))),
+        friendship: Math.max(0, Math.min(100, (character.friendship || 50) + (statChanges.friendship || 0))),
+      };
+      
+      const updatedCharacter = await storage.updateCharacter(characterId, updatedStats);
+      res.json(updatedCharacter);
+    } catch (error) {
+      console.error('Error updating character stats:', error);
+      res.status(500).json({ message: "Failed to update character stats" });
     }
   });
 

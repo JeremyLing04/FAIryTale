@@ -11,6 +11,7 @@ import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { type InsertCharacter, type Character } from "@shared/schema";
 import ImageUpload from "@/components/image-upload";
+import CharacterStatsEditor from "@/components/character-stats-editor";
 import { Wand2, Plus, X, Sparkles } from "lucide-react";
 
 export default function CharacterCreator() {
@@ -29,7 +30,13 @@ export default function CharacterCreator() {
     type: urlType || "explorer",
     personality: "",
     powers: [],
-    imageUrl: ""
+    imageUrl: "",
+    courage: 50,
+    kindness: 50,
+    wisdom: 50,
+    creativity: 50,
+    strength: 50,
+    friendship: 50
   });
 
   const [newPower, setNewPower] = useState("");
@@ -434,6 +441,12 @@ export default function CharacterCreator() {
                   ))}
                 </div>
               </div>
+
+              {/* Character Stats */}
+              <CharacterStatsEditor
+                character={character}
+                onStatsChange={(stats) => setCharacter({ ...character, ...stats })}
+              />
 
 
                 </>

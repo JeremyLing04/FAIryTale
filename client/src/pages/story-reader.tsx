@@ -15,6 +15,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { type Story, type Character, type StoryChapter } from "@shared/schema";
 import StoryInterface from "@/components/story-interface";
 import LoadingAnimation from "@/components/loading-animation";
+import CharacterStats from "@/components/character-stats";
 import { ArrowLeft, BookOpen, Sparkles, CheckCircle, ChevronDown } from "lucide-react";
 
 export default function StoryReader() {
@@ -95,9 +96,21 @@ export default function StoryReader() {
       ? currentChapter.choices?.optionA.text 
       : currentChapter.choices?.optionB.text;
 
+    const choiceData = choice === 'optionA' 
+      ? currentChapter.choices?.optionA 
+      : currentChapter.choices?.optionB;
+
     const nextChapter = story.currentChapter + 1;
 
     try {
+      // Apply stat changes from the choice
+      if (choiceData?.statChanges) {
+        await apiRequest("PATCH", `/api/characters/${character.id}/stats`, choiceData.statChanges);
+        
+        // Invalidate character query to refetch updated stats
+        queryClient.invalidateQueries({ queryKey: ["/api/characters", character.id] });
+      }
+
       await generateChapterMutation.mutateAsync({
         characterName: character.name,
         characterType: character.type,
@@ -106,6 +119,14 @@ export default function StoryReader() {
         chapterNumber: nextChapter,
         previousChoice: choiceText,
         characterImageUrl: character.imageUrl,
+        characterStats: {
+          courage: character.courage,
+          kindness: character.kindness,
+          wisdom: character.wisdom,
+          creativity: character.creativity,
+          strength: character.strength,
+          friendship: character.friendship,
+        },
       });
 
       toast({
@@ -132,6 +153,14 @@ export default function StoryReader() {
         genre: story.genre,
         chapterNumber: nextChapter,
         characterImageUrl: character.imageUrl,
+        characterStats: {
+          courage: character.courage,
+          kindness: character.kindness,
+          wisdom: character.wisdom,
+          creativity: character.creativity,
+          strength: character.strength,
+          friendship: character.friendship,
+        },
       });
 
       toast({
@@ -305,16 +334,39 @@ export default function StoryReader() {
         </Button>
       </div>
 
-      <StoryInterface
-        chapter={currentChapter}
-        storyTitle={story.title}
-        currentChapter={readingChapter || story.currentChapter}
-        totalChapters={story.totalChapters}
-        onChoiceSelect={readingChapter ? undefined : handleChoiceSelect}
-        onContinue={readingChapter ? undefined : handleContinue}
-        isLoading={isGenerating}
-        isReadingMode={!!readingChapter}
-      />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 px-4">
+        {/* Character Stats Sidebar */}
+        <div className="lg:col-span-1 order-2 lg:order-1">
+          <Card className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl">
+            <CardContent className="p-6">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-coral rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl text-white fredoka">
+                    {character.name[0]}
+                  </span>
+                </div>
+                <h3 className="fredoka text-lg text-darkgray mb-2">{character.name}</h3>
+                <p className="text-sm text-gray-600 capitalize">{character.type}</p>
+              </div>
+              <CharacterStats character={character} showTitle={false} />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Story Interface */}
+        <div className="lg:col-span-3 order-1 lg:order-2">
+          <StoryInterface
+            chapter={currentChapter}
+            storyTitle={story.title}
+            currentChapter={readingChapter || story.currentChapter}
+            totalChapters={story.totalChapters}
+            onChoiceSelect={readingChapter ? undefined : handleChoiceSelect}
+            onContinue={readingChapter ? undefined : handleContinue}
+            isLoading={isGenerating}
+            isReadingMode={!!readingChapter}
+          />
+        </div>
+      </div>
 
       {/* Chapter navigation moved under the story panel */}
       {allChapters && allChapters.length > 1 && (

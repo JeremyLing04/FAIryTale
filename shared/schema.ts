@@ -9,6 +9,13 @@ export const characters = pgTable("characters", {
   personality: text("personality").notNull(),
   powers: text("powers").array().default([]),
   imageUrl: text("image_url"), // character image upload
+  // Character stats (0-100 scale)
+  courage: integer("courage").default(50),
+  kindness: integer("kindness").default(50),
+  wisdom: integer("wisdom").default(50),
+  creativity: integer("creativity").default(50),
+  strength: integer("strength").default(50),
+  friendship: integer("friendship").default(50),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -34,10 +41,26 @@ export const storyChapters = pgTable("story_chapters", {
     optionA: {
       text: string;
       description: string;
+      statChanges?: {
+        courage?: number;
+        kindness?: number;
+        wisdom?: number;
+        creativity?: number;
+        strength?: number;
+        friendship?: number;
+      };
     };
     optionB: {
       text: string;
       description: string;
+      statChanges?: {
+        courage?: number;
+        kindness?: number;
+        wisdom?: number;
+        creativity?: number;
+        strength?: number;
+        friendship?: number;
+      };
     };
   } | null>(), // null when no choices available
   hasChoices: boolean("has_choices").default(false),
