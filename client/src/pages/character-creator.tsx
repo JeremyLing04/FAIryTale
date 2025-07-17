@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
@@ -29,6 +30,13 @@ export default function CharacterCreator() {
     type: urlType || "explorer",
     personality: "",
     powers: [],
+    stats: {
+      courage: 5,
+      intelligence: 5,
+      kindness: 5,
+      creativity: 5,
+      strength: 5,
+    },
     imageUrl: ""
   });
 
@@ -222,11 +230,28 @@ export default function CharacterCreator() {
                               </div>
                             </div>
                             {displayCharacter?.powers && displayCharacter.powers.length > 0 && (
-                              <div className="flex flex-wrap gap-2">
+                              <div className="flex flex-wrap gap-2 mb-3">
                                 {displayCharacter.powers.map((power: string, index: number) => (
                                   <span key={index} className="bg-turquoise text-white text-xs px-2 py-1 rounded-full">
                                     {power}
                                   </span>
+                                ))}
+                              </div>
+                            )}
+                            {displayCharacter?.stats && (
+                              <div className="grid grid-cols-5 gap-2 text-xs">
+                                {Object.entries(displayCharacter.stats).map(([stat, value]) => (
+                                  <div key={stat} className="text-center">
+                                    <div className="text-lg mb-1">
+                                      {stat === 'courage' ? '🦁' : 
+                                       stat === 'intelligence' ? '🧠' :
+                                       stat === 'kindness' ? '💖' :
+                                       stat === 'creativity' ? '🎨' :
+                                       stat === 'strength' ? '💪' : '⭐'}
+                                    </div>
+                                    <div className="font-bold text-coral">{value}</div>
+                                    <div className="text-gray-600 capitalize text-xs">{stat}</div>
+                                  </div>
                                 ))}
                               </div>
                             )}
@@ -392,6 +417,56 @@ export default function CharacterCreator() {
                   placeholder="Is your character brave, kind, funny, curious...?"
                   className="text-lg p-4 rounded-2xl border-2 border-gray-200 focus:border-coral min-h-[100px]"
                 />
+              </div>
+
+              {/* Character Stats */}
+              <div>
+                <Label className="text-lg font-semibold text-darkgray mb-3 block">
+                  <Sparkles className="inline mr-2 w-5 h-5" />
+                  Character Stats:
+                </Label>
+                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 space-y-6">
+                  {Object.entries(character.stats).map(([statName, value]) => (
+                    <div key={statName} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <Label className="text-base font-medium text-darkgray capitalize">
+                          {statName === 'intelligence' ? '🧠 Intelligence' :
+                           statName === 'courage' ? '🦁 Courage' :
+                           statName === 'kindness' ? '💖 Kindness' :
+                           statName === 'creativity' ? '🎨 Creativity' :
+                           statName === 'strength' ? '💪 Strength' : statName}
+                        </Label>
+                        <span className="text-sm font-bold text-coral bg-white px-2 py-1 rounded-full">
+                          {value}/10
+                        </span>
+                      </div>
+                      <Slider
+                        value={[value]}
+                        onValueChange={(newValue) => 
+                          setCharacter({
+                            ...character,
+                            stats: { ...character.stats, [statName]: newValue[0] }
+                          })
+                        }
+                        max={10}
+                        min={1}
+                        step={1}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <span>Beginner</span>
+                        <span>Expert</span>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="mt-4 p-3 bg-white/70 rounded-xl">
+                    <p className="text-sm text-darkgray">
+                      💡 <strong>Tip:</strong> These stats will affect your story! Higher courage leads to brave choices, 
+                      intelligence helps solve puzzles, kindness creates friendships, creativity finds unique solutions, 
+                      and strength helps in physical challenges.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Powers */}

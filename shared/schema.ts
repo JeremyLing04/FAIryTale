@@ -13,6 +13,13 @@ export interface Character {
   type: string;
   personality: string;
   powers: string[];
+  stats: {
+    courage: number;
+    intelligence: number;
+    kindness: number;
+    creativity: number;
+    strength: number;
+  };
   imageUrl?: string;
   createdAt?: string;
 }
@@ -36,11 +43,20 @@ export interface StoryChapter {
   content: string;
   imageUrl?: string;
   choices?: {
-    optionA: { text: string; description: string };
-    optionB: { text: string; description: string };
+    optionA: { 
+      text: string; 
+      description: string;
+      statEffects?: { [key: string]: number }; // e.g., { courage: +1, intelligence: -1 }
+    };
+    optionB: { 
+      text: string; 
+      description: string;
+      statEffects?: { [key: string]: number };
+    };
   } | null;
   hasChoices?: boolean;
   isGenerated?: boolean;
+  selectedChoice?: 'A' | 'B'; // Track which choice was made
   createdAt?: string;
 }
 
@@ -50,6 +66,13 @@ export const insertCharacterSchema = z.object({
   type: z.string().min(1),
   personality: z.string().min(1),
   powers: z.array(z.string()).default([]),
+  stats: z.object({
+    courage: z.number().min(1).max(10),
+    intelligence: z.number().min(1).max(10),
+    kindness: z.number().min(1).max(10),
+    creativity: z.number().min(1).max(10),
+    strength: z.number().min(1).max(10),
+  }),
   imageUrl: z.string().optional(),
 });
 
@@ -72,14 +95,17 @@ export const insertStoryChapterSchema = z.object({
     optionA: z.object({
       text: z.string(),
       description: z.string(),
+      statEffects: z.record(z.number()).optional(),
     }),
     optionB: z.object({
       text: z.string(),
       description: z.string(),
+      statEffects: z.record(z.number()).optional(),
     }),
   }).optional(),
   hasChoices: z.boolean().default(false),
   isGenerated: z.boolean().default(true),
+  selectedChoice: z.enum(['A', 'B']).optional(),
 });
 
 export type InsertCharacter = z.infer<typeof insertCharacterSchema>;

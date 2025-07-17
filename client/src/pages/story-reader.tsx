@@ -26,7 +26,7 @@ export default function StoryReader() {
   const [readingChapter, setReadingChapter] = useState<number | null>(null);
 
   const { data: story, isLoading: storyLoading } = useQuery<Story>({
-    queryKey: ["/api/stories", parseInt(id)],
+    queryKey: ["/api/stories", id],
   });
 
   const { data: character, isLoading: characterLoading } = useQuery<Character>({
@@ -38,13 +38,13 @@ export default function StoryReader() {
   const chapterToDisplay = readingChapter || story?.currentChapter;
   
   const { data: currentChapter, isLoading: chapterLoading } = useQuery<StoryChapter>({
-    queryKey: ["/api/stories", parseInt(id), "chapters", chapterToDisplay],
+    queryKey: ["/api/stories", id, "chapters", chapterToDisplay],
     enabled: !!chapterToDisplay,
   });
 
   // Get all chapters for navigation
   const { data: allChapters } = useQuery<StoryChapter[]>({
-    queryKey: ["/api/stories", parseInt(id), "chapters"],
+    queryKey: ["/api/stories", id, "chapters"],
     enabled: !!story,
   });
 
@@ -54,11 +54,41 @@ export default function StoryReader() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/stories", parseInt(id)] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stories", id] });
     },
   });
 
 
+
+  const makeChoiceMutation = useMutation({
+    mutationFn: async ({ chapterNumber, choice }: { chapterNumber: number; choice: 'A' | 'B' }) => {
+      const response = await apiRequest("POST", `/api/stories/${id}/make-choice`, {
+        chapterNumber,
+        choice,
+        characterId: story?.characterId
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Invalidate character query to get updated stats
+      queryClient.invalidateQueries({ queryKey: ["/api/characters", story?.characterId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stories", id, "chapters"] });
+      
+      if (data.statEffects) {
+        const effects = Object.entries(data.statEffects)
+          .filter(([_, effect]) => effect !== 0)
+          .map(([stat, effect]) => `${stat} ${effect > 0 ? '+' : ''}${effect}`)
+          .join(', ');
+        
+        if (effects) {
+          toast({
+            title: "Character Growth!",
+            description: `Your choice affected: ${effects}`,
+          });
+        }
+      }
+    },
+  });
 
   const generateChapterMutation = useMutation({
     mutationFn: async (request: any) => {
@@ -67,8 +97,8 @@ export default function StoryReader() {
     },
     onSuccess: (data) => {
       // Invalidate queries to refetch updated story and chapters
-      queryClient.invalidateQueries({ queryKey: ["/api/stories", parseInt(id)] });
-      queryClient.invalidateQueries({ queryKey: ["/api/stories", parseInt(id), "chapters"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stories", id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stories", id, "chapters"] });
       
       setIsGenerating(false);
       toast({
@@ -253,6 +283,7 @@ export default function StoryReader() {
                     genre: story.genre,
                     chapterNumber: 1,
                     characterImageUrl: character.imageUrl,
+                    stats: character.stats,
                   });
                 }}
                 disabled={isGenerating}
@@ -305,6 +336,51 @@ export default function StoryReader() {
         </Button>
       </div>
 
+      {/* Character Stats Panel */}
+      <div className="px-4 mb-6">
+        <div className="max-w-4xl mx-auto">
+          <Card className="bg-gradient-to-r from-purple-100 to-blue-100 border-2 border-purple-200">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  {character.imageUrl && (
+                    <img 
+                      src={character.imageUrl} 
+                      alt={character.name}
+                      className="w-12 h-12 rounded-full object-cover border-2 border-white"
+                    />
+                  )}
+                  <div>
+                    <h3 className="fredoka text-lg text-darkgray">{character.name}</h3>
+                    <p className="text-sm text-gray-600 capitalize">{character.type}</p>
+                  </div>
+                </div>
+                
+                {character.stats && (
+                  <div className="grid grid-cols-5 gap-3 text-center">
+                    {Object.entries(character.stats).map(([stat, value]) => (
+                      <div key={stat} className="flex flex-col items-center">
+                        <div className="text-lg mb-1">
+                          {stat === 'courage' ? '🦁' : 
+                           stat === 'intelligence' ? '🧠' :
+                           stat === 'kindness' ? '💖' :
+                           stat === 'creativity' ? '🎨' :
+                           stat === 'strength' ? '💪' : '⭐'}
+                        </div>
+                        <div className="text-sm font-bold text-coral bg-white px-2 py-1 rounded-full min-w-[2rem]">
+                          {value}
+                        </div>
+                        <div className="text-xs text-gray-600 capitalize">{stat}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
       <StoryInterface
         chapter={currentChapter}
         storyTitle={story.title}
@@ -314,6 +390,8 @@ export default function StoryReader() {
         onContinue={readingChapter ? undefined : handleContinue}
         isLoading={isGenerating}
         isReadingMode={!!readingChapter}
+        character={character}
+        onMakeChoice={makeChoiceMutation.mutate}
       />
 
       {/* Chapter navigation moved under the story panel */}
