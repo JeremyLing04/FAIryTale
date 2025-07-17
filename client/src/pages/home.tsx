@@ -122,11 +122,7 @@ export default function Home() {
                       <div className="text-center">
                         <div className="text-6xl mb-4">{character.icon}</div>
                         <h4 className="fredoka text-xl text-darkgray mb-2">{character.name}</h4>
-                        <p className="text-darkgray text-sm mb-4">{character.description}</p>
-                        <Button className="bg-white/90 hover:bg-white text-darkgray text-sm px-4 py-2 rounded-full transition-colors">
-                          <Sparkles className="w-4 h-4 mr-2" />
-                          Choose This Type
-                        </Button>
+                        <p className="text-darkgray text-sm">{character.description}</p>
                       </div>
                     </div>
                   </Link>
