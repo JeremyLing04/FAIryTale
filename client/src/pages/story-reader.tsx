@@ -26,7 +26,7 @@ export default function StoryReader() {
   const [readingChapter, setReadingChapter] = useState<number | null>(null);
 
   const { data: story, isLoading: storyLoading } = useQuery<Story>({
-    queryKey: ["/api/stories", id],
+    queryKey: ["/api/stories", parseInt(id)],
   });
 
   const { data: character, isLoading: characterLoading } = useQuery<Character>({
@@ -38,13 +38,13 @@ export default function StoryReader() {
   const chapterToDisplay = readingChapter || story?.currentChapter;
   
   const { data: currentChapter, isLoading: chapterLoading } = useQuery<StoryChapter>({
-    queryKey: ["/api/stories", id, "chapters", chapterToDisplay],
+    queryKey: ["/api/stories", parseInt(id), "chapters", chapterToDisplay],
     enabled: !!chapterToDisplay,
   });
 
   // Get all chapters for navigation
   const { data: allChapters } = useQuery<StoryChapter[]>({
-    queryKey: ["/api/stories", id, "chapters"],
+    queryKey: ["/api/stories", parseInt(id), "chapters"],
     enabled: !!story,
   });
 
@@ -54,7 +54,7 @@ export default function StoryReader() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/stories", id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stories", parseInt(id)] });
     },
   });
 
@@ -97,8 +97,8 @@ export default function StoryReader() {
     },
     onSuccess: (data) => {
       // Invalidate queries to refetch updated story and chapters
-      queryClient.invalidateQueries({ queryKey: ["/api/stories", id] });
-      queryClient.invalidateQueries({ queryKey: ["/api/stories", id, "chapters"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stories", parseInt(id)] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stories", parseInt(id), "chapters"] });
       
       setIsGenerating(false);
       toast({

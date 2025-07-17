@@ -208,7 +208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Route to handle choice selection and stat updates
   app.post("/api/stories/:storyId/make-choice", async (req, res) => {
     try {
-      const storyId = req.params.storyId;
+      const storyId = parseInt(req.params.storyId);
       const { chapterNumber, choice, characterId } = req.body;
       
       // Get the chapter to check stat effects
@@ -225,7 +225,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Apply stat effects to character
       const choiceData = choice === 'A' ? chapter.choices.optionA : chapter.choices.optionB;
       if (choiceData.statEffects && characterId) {
-        const character = await storage.getCharacter(characterId);
+        const character = await storage.getCharacter(parseInt(characterId));
         if (character && character.stats) {
           const newStats = { ...character.stats };
           
@@ -238,7 +238,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           });
           
-          await storage.updateCharacter(characterId, { stats: newStats });
+          await storage.updateCharacter(parseInt(characterId), { stats: newStats });
         }
       }
       
