@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./firebase-storage";
 import { 
   insertCharacterSchema, 
   insertStorySchema,
@@ -33,7 +33,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/characters/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const character = await storage.getCharacter(id);
       if (!character) {
         return res.status(404).json({ message: "Character not found" });
@@ -66,7 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/stories/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const story = await storage.getStory(id);
       if (!story) {
         return res.status(404).json({ message: "Story not found" });
@@ -79,12 +79,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/stories/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const updates = req.body;
       const updatedStory = await storage.updateStory(id, updates);
-      if (!updatedStory) {
-        return res.status(404).json({ message: "Story not found" });
-      }
       res.json(updatedStory);
     } catch (error) {
       res.status(500).json({ message: "Failed to update story" });
@@ -94,12 +91,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Story chapter routes
   app.post("/api/stories/:storyId/chapters", async (req, res) => {
     try {
-      const storyId = parseInt(req.params.storyId);
+      const storyId = req.params.storyId;
       const chapter = insertStoryChapterSchema.parse({
         ...req.body,
         storyId
       });
-      const newChapter = await storage.createStoryChapter(chapter);
+      const newChapter = await storage.createChapter(chapter);
       res.json(newChapter);
     } catch (error) {
       res.status(400).json({ message: "Invalid chapter data" });
@@ -108,9 +105,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/stories/:storyId/chapters/:chapterNumber", async (req, res) => {
     try {
-      const storyId = parseInt(req.params.storyId);
+      const storyId = req.params.storyId;
       const chapterNumber = parseInt(req.params.chapterNumber);
-      const chapter = await storage.getStoryChapter(storyId, chapterNumber);
+      const chapter = await storage.getChapter(storyId, chapterNumber);
       if (!chapter) {
         return res.status(404).json({ message: "Chapter not found" });
       }
@@ -122,7 +119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/stories/:storyId/chapters", async (req, res) => {
     try {
-      const storyId = parseInt(req.params.storyId);
+      const storyId = req.params.storyId;
       const chapters = await storage.getStoryChapters(storyId);
       res.json(chapters);
     } catch (error) {
@@ -133,7 +130,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dynamic story generation route
   app.post("/api/stories/:storyId/generate-chapter", async (req, res) => {
     try {
-      const storyId = parseInt(req.params.storyId);
+      const storyId = req.params.storyId;
       const requestSchema = z.object({
         characterName: z.string(),
         characterType: z.string(),
@@ -185,7 +182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imageUrl,
       };
       
-      const savedChapter = await storage.createStoryChapter(chapterData);
+      const savedChapter = await storage.createChapter(chapterData);
       
       // Update story progress
       await storage.updateStory(storyId, {

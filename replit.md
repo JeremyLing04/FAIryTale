@@ -22,16 +22,16 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture
 - **Framework**: Express.js with TypeScript
 - **Runtime**: Node.js with ES modules
-- **Database ORM**: Drizzle ORM configured for PostgreSQL
-- **Database Provider**: Neon Database (serverless PostgreSQL)
-- **AI Integration**: OpenAI API for story generation and image creation
+- **Database**: Firebase Firestore (NoSQL document database)
+- **Storage**: Firebase Storage for file uploads
+- **AI Integration**: Ollama with Mistral model and Python-based Stable Diffusion
 - **Session Management**: Express sessions with PostgreSQL storage
 
 ### Database Design
-The application uses a PostgreSQL database with three main entities:
+The application uses Firebase Firestore with three main collections:
 - **Characters**: Store character details including appearance, personality, and special powers
 - **Stories**: Track story metadata, progress, and completion status
-- **Story Chapters**: Individual story segments with content, images, and interactive choices
+- **Chapters**: Individual story segments with content, images, and interactive choices
 
 ## Key Components
 
@@ -42,9 +42,9 @@ The application uses a PostgreSQL database with three main entities:
 - Visual character cards with themed color gradients
 
 ### AI Story Generation
-- OpenAI GPT-4o integration for generating age-appropriate story content
+- Ollama with Mistral model for generating age-appropriate story content
+- Python-based Stable Diffusion for chapter image generation
 - Dynamic story branching based on user choices
-- Automatic image generation for story chapters
 - Content safety measures ensuring child-appropriate material
 
 ### Interactive Story Reader
@@ -60,16 +60,15 @@ The application uses a PostgreSQL database with three main entities:
 
 ## Data Flow
 
-1. **Character Creation**: User creates a character → Data validated with Zod → Stored in PostgreSQL via Drizzle ORM
-2. **Story Initialization**: User selects character and story genre → Story record created → First chapter generated via OpenAI API
+1. **Character Creation**: User creates a character → Data validated with Zod → Stored in Firebase Firestore
+2. **Story Initialization**: User selects character and story genre → Story record created → First chapter generated via Ollama/Mistral
 3. **Story Progression**: User makes choices → New chapter generated based on previous content and choice → Chapter stored and displayed
 4. **Story Completion**: Final chapter reached → Story marked as complete → Available in gallery
 
 ## External Dependencies
 
 ### Core Dependencies
-- **@neondatabase/serverless**: Serverless PostgreSQL database connection
-- **drizzle-orm**: Type-safe database ORM
+- **firebase**: Firebase SDK for Firestore database and storage
 - **@tanstack/react-query**: Server state management and caching
 - **wouter**: Lightweight React router
 - **zod**: Runtime type validation and schema definition
@@ -124,6 +123,9 @@ The image generator supports both system Python and virtual environments:
 - The system automatically detects and uses the venv when available
 
 ### Recent Changes
+- **January 17, 2025**: Completed migration from PostgreSQL to Firebase Firestore
+- **January 17, 2025**: Updated all database operations to use Firebase string IDs instead of integer IDs
+- **January 17, 2025**: Migrated schema definitions from Drizzle ORM to Firebase-compatible TypeScript interfaces
 - **January 16, 2025**: Replaced OpenAI with Ollama+Mistral for story generation
 - **January 16, 2025**: Integrated Python-based Stable Diffusion image generator with IP-Adapter support
 - **January 16, 2025**: Modified choice system to only appear every 2-3 chapters instead of every chapter
@@ -131,8 +133,5 @@ The image generator supports both system Python and virtual environments:
 - **January 16, 2025**: Implemented character and story artwork image upload (5MB limit)
 - **January 16, 2025**: Increased Express body parser limit to 10MB to handle image uploads
 - **January 16, 2025**: Added continue button for chapters without choices
-- **January 16, 2025**: Created PostgreSQL database and migrated from in-memory storage
-- **January 16, 2025**: Implemented fully dynamic chapter generation system with database persistence
-- **January 16, 2025**: Updated story progression to generate chapters on-demand instead of pre-generating
 
 The application is designed to be easily deployable on platforms like Replit, with automatic environment detection and appropriate build/serve strategies for each environment.
