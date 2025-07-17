@@ -167,25 +167,4 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-// Storage factory function
-async function createStorage(): Promise<IStorage> {
-  const useFirebase = process.env.USE_FIREBASE === 'true';
-  
-  if (useFirebase) {
-    try {
-      const { FirebaseStorage } = await import('./firebase-storage');
-      console.log('✓ Using Firebase storage');
-      return new FirebaseStorage();
-    } catch (error) {
-      console.error('Failed to initialize Firebase storage:', error);
-      console.log('Falling back to Database storage');
-      return new DatabaseStorage();
-    }
-  } else {
-    console.log('✓ Using Database storage');
-    return new DatabaseStorage();
-  }
-}
-
-// Export storage promise
-export const storage = await createStorage();
+export const storage = new DatabaseStorage();
