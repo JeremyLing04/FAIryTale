@@ -22,10 +22,13 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture
 - **Framework**: Express.js with TypeScript
 - **Runtime**: Node.js with ES modules
-- **Database ORM**: Drizzle ORM configured for PostgreSQL
-- **Database Provider**: Neon Database (serverless PostgreSQL)
-- **AI Integration**: OpenAI API for story generation and image creation
-- **Session Management**: Express sessions with PostgreSQL storage
+- **Database Options**: 
+  - PostgreSQL with Drizzle ORM (production/cloud)
+  - Firebase Firestore (local development)
+  - In-memory storage (testing)
+- **Database Provider**: Neon Database (serverless PostgreSQL) or Firebase
+- **AI Integration**: Ollama + Mistral for story generation, Python + Stable Diffusion for images
+- **Session Management**: Express sessions with database storage
 
 ### Database Design
 The application uses a PostgreSQL database with three main entities:
@@ -128,6 +131,10 @@ The image generator supports both system Python and virtual environments:
 - The system automatically detects and uses the venv when available
 
 ### Recent Changes
+- **January 18, 2025**: Added Firebase Firestore integration for local development
+- **January 18, 2025**: Created flexible storage system supporting PostgreSQL, Firebase, and in-memory storage
+- **January 18, 2025**: Enhanced Windows setup with custom Python virtual environment path support
+- **January 18, 2025**: Added Firebase setup documentation and configuration options
 - **January 17, 2025**: Added comprehensive character stats system with 6 attributes (courage, kindness, wisdom, creativity, strength, friendship)
 - **January 17, 2025**: Implemented character stats editor with sliders in character creator
 - **January 17, 2025**: Added character stats display on character cards and story reader sidebar
