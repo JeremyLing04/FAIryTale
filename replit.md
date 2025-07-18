@@ -127,12 +127,6 @@ The image generator supports both system Python and virtual environments:
 - The system automatically detects and uses the venv when available
 
 ### Recent Changes
-- **January 18, 2025**: Enhanced story generation with comprehensive fallback system - no external dependencies required
-- **January 18, 2025**: Added genre-specific story templates (adventure, fantasy, mystery) with character-aware content
-- **January 18, 2025**: Implemented dynamic choice generation system with meaningful stat changes
-- **January 18, 2025**: Successfully deployed database-free version with Windows production compatibility
-- **January 18, 2025**: Fixed Windows socket issues by configuring localhost for Windows, 0.0.0.0 for other platforms
-- **January 18, 2025**: Added automatic first chapter generation when stories are created
 - **January 18, 2025**: Removed database dependency - migrated back to in-memory storage for simplified deployment
 - **January 18, 2025**: Updated schema to use TypeScript interfaces instead of Drizzle ORM tables
 - **January 18, 2025**: Enhanced Windows setup automation with custom virtual environment path support
