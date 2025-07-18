@@ -36,8 +36,6 @@ Create a `.env` file only if you need custom settings:
 NODE_ENV=development
 # Optional: Custom Python virtual environment path
 PYTHON_VENV_PATH=C:\Users\Admin\Downloads\Story\fast_story_gen\venv
-# Optional: Custom Python app.py file path
-PYTHON_APP_PATH=C:\Users\Admin\Downloads\Story\fast_story_gen\app.py
 ```
 
 **Example Windows setup:**
@@ -166,7 +164,6 @@ setup_windows.bat        # Automated Windows setup script
 |----------|----------|-------------|
 | `NODE_ENV` | No | Environment (development/production) |
 | `PYTHON_VENV_PATH` | No | Custom Python virtual environment path |
-| `PYTHON_APP_PATH` | No | Custom Python app.py file path |
 | `OPENAI_API_KEY` | No | Optional for fallback AI generation |
 
 ## Dependencies Overview
