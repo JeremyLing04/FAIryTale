@@ -127,6 +127,10 @@ The image generator supports both system Python and virtual environments:
 - The system automatically detects and uses the venv when available
 
 ### Recent Changes
+- **January 18, 2025**: Added fallback story generation - app works without Ollama/AI dependencies
+- **January 18, 2025**: Added fallback image handling - app works without Python/Stable Diffusion
+- **January 18, 2025**: Fixed Windows compatibility issues with socket binding and production builds
+- **January 18, 2025**: Created simple setup guide for users who don't need AI features
 - **January 18, 2025**: Removed database dependency - migrated back to in-memory storage for simplified deployment
 - **January 18, 2025**: Updated schema to use TypeScript interfaces instead of Drizzle ORM tables
 - **January 18, 2025**: Enhanced Windows setup automation with custom virtual environment path support

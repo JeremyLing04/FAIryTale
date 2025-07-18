@@ -54,7 +54,87 @@ export interface StoryChapterResponse {
   };
 }
 
+// Function to check if Ollama is available
+async function isOllamaAvailable(): Promise<boolean> {
+  try {
+    await execAsync('ollama --version');
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+// Fallback story generation when Ollama is not available
+function generateFallbackStory(request: StoryGenerationRequest): StoryChapterResponse {
+  const { characterName, characterType, personality, genre, chapterNumber } = request;
+  const shouldIncludeChoices = chapterNumber % 3 === 0 || chapterNumber === 1;
+  
+  const stories = {
+    1: `Chapter ${chapterNumber}: Welcome to the beginning of ${characterName}'s amazing ${genre} adventure! 
+
+${characterName} the ${personality} ${characterType} stood at the edge of a magical forest, their heart filled with excitement. The trees whispered ancient secrets, and colorful butterflies danced through beams of golden sunlight.
+
+As ${characterName} took their first steps into this enchanted world, they discovered a sparkling stream that seemed to glow with magical energy. The water sang a gentle melody that made them feel brave and curious about what lay ahead.
+
+"This is going to be the most wonderful adventure ever!" ${characterName} thought, feeling ready to explore all the mysteries this magical place had to offer.`,
+    
+    2: `Chapter ${chapterNumber}: ${characterName} continues deeper into the magical realm, where every step brings new wonders.
+
+Walking along the enchanted path, ${characterName} discovered a grove where flowers changed colors with each step. Red roses turned to golden sunflowers, then to purple lavender that filled the air with sweet perfume.
+
+In the center of the grove stood a wise old tree with a face carved in its bark. "Welcome, young ${characterType}," the tree said with a voice like rustling leaves. "I am the Guardian of Stories, and I have been waiting for someone like you."
+
+The tree's branches swayed gently, revealing a hidden doorway glowing with soft, rainbow light. ${characterName} felt a mix of wonder and curiosity about what magical secrets lay beyond.`,
+    
+    default: `Chapter ${chapterNumber}: ${characterName}'s ${genre} adventure takes an exciting turn!
+
+With their ${personality} spirit shining bright, ${characterName} the ${characterType} faced the challenges ahead with courage and determination. Each step of the journey taught them something new about friendship, bravery, and the magic that exists in believing in yourself.
+
+The world around them sparkled with possibilities, and ${characterName} knew that no matter what happened next, they were ready for any adventure that came their way. Their heart was full of hope and excitement for the chapters still to come.
+
+"Every day brings new magic when you're brave enough to look for it," ${characterName} whispered to themselves, smiling at the wonderful journey they were on.`
+  };
+
+  const content = stories[chapterNumber as keyof typeof stories] || stories.default;
+  
+  if (!shouldIncludeChoices) {
+    return { content };
+  }
+
+  return {
+    content,
+    choices: {
+      optionA: {
+        text: "Explore the magical forest",
+        description: "Venture deeper into the enchanted woods to discover hidden secrets",
+        statChanges: {
+          courage: 5,
+          creativity: 3,
+          wisdom: 2
+        }
+      },
+      optionB: {
+        text: "Help a friendly creature",
+        description: "Stop to assist a lost woodland animal find their way home",
+        statChanges: {
+          kindness: 5,
+          friendship: 4,
+          wisdom: 1
+        }
+      }
+    }
+  };
+}
+
 export async function generateStoryChapter(request: StoryGenerationRequest): Promise<StoryChapterResponse> {
+  // Check if Ollama is available
+  const ollamaAvailable = await isOllamaAvailable();
+  
+  if (!ollamaAvailable) {
+    console.log('Ollama not available, using fallback story generation');
+    return generateFallbackStory(request);
+  }
+
   // Only add choices every 2-3 chapters, not every chapter
   const shouldIncludeChoices = request.chapterNumber % 3 === 0 || request.chapterNumber === 1;
   
@@ -149,7 +229,31 @@ Format your response as JSON with this structure:
   }
 }
 
+// Function to check if Python is available
+async function isPythonAvailable(): Promise<boolean> {
+  try {
+    await execAsync('python --version');
+    return true;
+  } catch (error) {
+    try {
+      await execAsync('python3 --version');
+      return true;
+    } catch (error2) {
+      return false;
+    }
+  }
+}
+
 export async function generateStoryImage(description: string, characterImageUrl?: string, genre: string = "cartoon"): Promise<string> {
+  // Check if Python is available
+  const pythonAvailable = await isPythonAvailable();
+  
+  if (!pythonAvailable) {
+    console.log('Python not available, skipping image generation');
+    // Return the character image if available, or empty string
+    return characterImageUrl || "";
+  }
+
   try {
     // Ensure the generated_images directory exists
     const imagesDir = path.join(process.cwd(), 'generated_images');
