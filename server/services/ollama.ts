@@ -71,25 +71,26 @@ async function checkOllamaStatus(): Promise<boolean> {
   }
 }
 
-// Function to start Ollama and pull model if needed
+// Function to start Ollama and pull model if needed (async background setup)
 async function setupOllama(): Promise<boolean> {
   try {
-    console.log('Setting up Ollama...');
+    console.log('Setting up Ollama in background...');
     
     // Start Ollama service
     exec('ollama serve > /dev/null 2>&1 &');
     
-    // Wait a moment for service to start
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // Start model pull in background without waiting
+    setTimeout(async () => {
+      try {
+        console.log(`Starting background download of ${MODEL_NAME} model...`);
+        await execAsync(`ollama pull ${MODEL_NAME}`, { timeout: 300000 }); // 5 min timeout
+        console.log(`${MODEL_NAME} model ready for use`);
+      } catch (error) {
+        console.error('Background model download failed:', error);
+      }
+    }, 2000);
     
-    // Check if model exists, if not try to pull it
-    const hasModel = await checkOllamaStatus();
-    if (!hasModel) {
-      console.log(`Pulling ${MODEL_NAME} model...`);
-      await execAsync(`ollama pull ${MODEL_NAME}`, { timeout: 60000 });
-    }
-    
-    return await checkOllamaStatus();
+    return false; // Return false to use local generation immediately
   } catch (error) {
     console.error('Failed to setup Ollama:', error);
     return false;
@@ -177,44 +178,51 @@ Format your response as JSON with this structure:
 }`;
 
   try {
-    console.log('Attempting to generate story with Ollama...');
-    const response = await generateWithOllama(prompt);
+    // Check if Ollama is ready without waiting
+    const isOllamaReady = await checkOllamaStatus();
     
-    // Try to parse the JSON response
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      try {
-        const result = JSON.parse(jsonMatch[0]);
-        console.log('Successfully generated story with Ollama');
-        return result as StoryChapterResponse;
-      } catch (parseError) {
-        console.error('Failed to parse Ollama JSON response:', parseError);
+    if (isOllamaReady) {
+      console.log('Attempting to generate story with Ollama...');
+      const response = await generateWithOllama(prompt);
+      
+      // Try to parse the JSON response
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          const result = JSON.parse(jsonMatch[0]);
+          console.log('Successfully generated story with Ollama');
+          return result as StoryChapterResponse;
+        } catch (parseError) {
+          console.error('Failed to parse Ollama JSON response:', parseError);
+        }
+      }
+      
+      // If we got a response but couldn't parse JSON, create a structured response
+      if (response.trim()) {
+        console.log('Got response from Ollama but couldn\'t parse JSON, creating structured response');
+        return {
+          content: response.trim(),
+          ...(shouldIncludeChoices && {
+            choices: {
+              optionA: {
+                text: "Continue the adventure",
+                description: "Keep exploring with courage",
+                statChanges: { courage: 5, kindness: 0, wisdom: 0, creativity: 0, strength: 0, friendship: 0 }
+              },
+              optionB: {
+                text: "Help someone in need",
+                description: "Show kindness to others",
+                statChanges: { courage: 0, kindness: 5, wisdom: 0, creativity: 0, strength: 0, friendship: 0 }
+              }
+            }
+          })
+        };
       }
     }
     
-    // If we got a response but couldn't parse JSON, create a structured response
-    if (response.trim()) {
-      console.log('Got response from Ollama but couldn\'t parse JSON, creating structured response');
-      return {
-        content: response.trim(),
-        ...(shouldIncludeChoices && {
-          choices: {
-            optionA: {
-              text: "Continue the adventure",
-              description: "Keep exploring with courage",
-              statChanges: { courage: 5, kindness: 0, wisdom: 0, creativity: 0, strength: 0, friendship: 0 }
-            },
-            optionB: {
-              text: "Help someone in need",
-              description: "Show kindness to others",
-              statChanges: { courage: 0, kindness: 5, wisdom: 0, creativity: 0, strength: 0, friendship: 0 }
-            }
-          }
-        })
-      };
-    }
-    
-    throw new Error('Empty response from Ollama');
+    // Use local generation immediately if Ollama not ready
+    console.log('Ollama not ready, using enhanced local story generation');
+    return generateLocalStory(request, shouldIncludeChoices);
   } catch (error) {
     console.error('Error with Ollama, using creative local generation:', error);
     
