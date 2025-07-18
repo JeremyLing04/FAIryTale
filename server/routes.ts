@@ -7,6 +7,13 @@ import {
   insertStoryChapterSchema 
 } from "@shared/schema";
 import { generateStoryChapter, generateStoryImage } from "./services/ollama";
+import { 
+  generateCharacterSuggestions, 
+  generateStoryIdeas, 
+  generateCharacterImage, 
+  enhancePersonalityDescription,
+  generatePowerSuggestions
+} from "./services/ai-assistant";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -256,6 +263,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error in generate-chapter:', error);
       res.status(500).json({ message: "Failed to generate story chapter" });
+    }
+  });
+
+  // AI Assistant routes
+  app.post("/api/ai/character-suggestions", async (req, res) => {
+    try {
+      const requestSchema = z.object({
+        characterType: z.string(),
+        userInput: z.string().optional(),
+      });
+      
+      const { characterType, userInput } = requestSchema.parse(req.body);
+      const suggestions = await generateCharacterSuggestions(characterType, userInput);
+      res.json({ suggestions });
+    } catch (error) {
+      console.error('Error generating character suggestions:', error);
+      res.status(500).json({ message: "Failed to generate character suggestions" });
+    }
+  });
+
+  app.post("/api/ai/story-ideas", async (req, res) => {
+    try {
+      const requestSchema = z.object({
+        characterName: z.string(),
+        characterType: z.string(),
+        personality: z.string(),
+        powers: z.array(z.string()),
+      });
+      
+      const request = requestSchema.parse(req.body);
+      const ideas = await generateStoryIdeas(
+        request.characterName,
+        request.characterType,
+        request.personality,
+        request.powers
+      );
+      res.json({ ideas });
+    } catch (error) {
+      console.error('Error generating story ideas:', error);
+      res.status(500).json({ message: "Failed to generate story ideas" });
+    }
+  });
+
+  app.post("/api/ai/generate-character-image", async (req, res) => {
+    try {
+      const requestSchema = z.object({
+        characterName: z.string().optional(),
+        characterType: z.string(),
+        personality: z.string(),
+        powers: z.array(z.string()).optional(),
+        style: z.enum(['cartoon', 'illustration', 'fantasy', 'colorful']).optional(),
+      });
+      
+      const request = requestSchema.parse(req.body);
+      const imageUrl = await generateCharacterImage(request);
+      
+      if (imageUrl) {
+        res.json({ imageUrl });
+      } else {
+        res.status(500).json({ message: "Failed to generate image" });
+      }
+    } catch (error) {
+      console.error('Error generating character image:', error);
+      res.status(500).json({ message: "Failed to generate character image" });
+    }
+  });
+
+  app.post("/api/ai/enhance-personality", async (req, res) => {
+    try {
+      const requestSchema = z.object({
+        personalityInput: z.string(),
+        characterType: z.string(),
+      });
+      
+      const { personalityInput, characterType } = requestSchema.parse(req.body);
+      const enhanced = await enhancePersonalityDescription(personalityInput, characterType);
+      res.json({ enhanced });
+    } catch (error) {
+      console.error('Error enhancing personality:', error);
+      res.status(500).json({ message: "Failed to enhance personality description" });
+    }
+  });
+
+  app.post("/api/ai/power-suggestions", async (req, res) => {
+    try {
+      const requestSchema = z.object({
+        characterType: z.string(),
+        personality: z.string(),
+      });
+      
+      const { characterType, personality } = requestSchema.parse(req.body);
+      const powers = await generatePowerSuggestions(characterType, personality);
+      res.json({ powers });
+    } catch (error) {
+      console.error('Error generating power suggestions:', error);
+      res.status(500).json({ message: "Failed to generate power suggestions" });
     }
   });
 

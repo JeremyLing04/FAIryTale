@@ -12,6 +12,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { type InsertCharacter, type Character } from "@shared/schema";
 import ImageUpload from "@/components/image-upload";
 import CharacterStatsEditor from "@/components/character-stats-editor";
+import AIAssistant from "@/components/ai-assistant";
 import { Wand2, Plus, X, Sparkles } from "lucide-react";
 
 export default function CharacterCreator() {
@@ -195,6 +196,54 @@ export default function CharacterCreator() {
             }
           </p>
         </div>
+
+        {/* AI Assistant */}
+        <AIAssistant
+          step={step}
+          character={step === 'story' ? (createdCharacter || existingCharacter) : character}
+          onCharacterSuggestionApply={(suggestion) => {
+            setCharacter({
+              ...character,
+              name: suggestion.name,
+              personality: suggestion.personality,
+              powers: suggestion.powers
+            });
+            toast({
+              title: "Character Applied!",
+              description: `${suggestion.name} has been added to your character.`,
+            });
+          }}
+          onStoryIdeaApply={(idea) => {
+            setStoryDetails({
+              ...storyDetails,
+              title: idea.title,
+              genre: idea.genre
+            });
+            toast({
+              title: "Story Idea Applied!",
+              description: `"${idea.title}" has been set as your story.`,
+            });
+          }}
+          onImageGenerate={(imageUrl) => {
+            if (step === 'character') {
+              setCharacter({ ...character, imageUrl });
+            } else {
+              setStoryDetails({ ...storyDetails, imageUrl });
+            }
+          }}
+          onPersonalityEnhance={(enhanced) => {
+            setCharacter({ ...character, personality: enhanced });
+          }}
+          onPowerSuggestionsApply={(powers) => {
+            const newPowers = [...character.powers];
+            powers.forEach(power => {
+              if (!newPowers.includes(power)) {
+                newPowers.push(power);
+              }
+            });
+            setCharacter({ ...character, powers: newPowers });
+          }}
+        />
 
         <Card className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl">
           <CardHeader>
