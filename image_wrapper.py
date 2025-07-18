@@ -43,9 +43,7 @@ def main():
         "python", "app.py",
         "--story", story_text,
         "--output_dir", output_dir,
-        "--seed", str(hash(args.description) % 10000),  # Deterministic seed based on description
-        "--steps", "20",  # Faster generation for interactive use
-        "--scale", "7.5"
+        "--seed", str(hash(args.description) % 10000)  # Deterministic seed based on description
     ]
     
     # Add reference image if provided
