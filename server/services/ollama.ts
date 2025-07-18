@@ -334,8 +334,39 @@ export async function generateStoryImage(description: string, characterImageUrl?
       formData.append('description', limitedDescription);
       formData.append('genre', genre);
       if (characterName) formData.append('character_name', characterName);
-      // Skip character image URL to avoid 413 errors for now
-      // if (characterImageUrl) formData.append('character_image_url', characterImageUrl);
+      
+      // Handle character reference image for IP-Adapter
+      if (characterImageUrl) {
+        if (characterImageUrl.startsWith('data:')) {
+          // Handle base64 data URL
+          const base64Data = characterImageUrl.split(',')[1];
+          const mimeType = characterImageUrl.match(/data:([^;]+)/)?.[1] || 'image/png';
+          const extension = mimeType.split('/')[1];
+          
+          // Convert base64 to blob
+          const byteCharacters = atob(base64Data);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: mimeType });
+          
+          formData.append('character_image', blob, `character.${extension}`);
+        } else if (characterImageUrl.startsWith('http')) {
+          // Handle URL - fetch and convert to blob
+          try {
+            const imageResponse = await fetch(characterImageUrl);
+            const imageBlob = await imageResponse.blob();
+            formData.append('character_image', imageBlob, 'character.png');
+          } catch (error) {
+            console.log('Could not fetch character image from URL:', error);
+          }
+        } else {
+          // Handle local file path or asset path
+          formData.append('character_image_url', characterImageUrl);
+        }
+      }
       
       const response = await fetch(`${remoteImageUrl}/generate`, {
         method: 'POST',

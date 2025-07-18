@@ -52,6 +52,17 @@ def generate_image():
         character_name = request.form.get('character_name', 'hero')
         character_image = request.form.get('character_image')
         
+        # Handle uploaded character reference image file
+        character_image_file = request.files.get('character_image')
+        if character_image_file:
+            # Save uploaded image temporarily for processing
+            timestamp = int(time.time())
+            filename = f"character_ref_{timestamp}.png"
+            temp_upload_path = os.path.join(OUTPUT_DIR, filename)
+            character_image_file.save(temp_upload_path)
+            character_image = temp_upload_path
+            print(f"Saved uploaded character reference image: {temp_upload_path}")
+        
         if not description:
             return jsonify({'error': 'Description is required'}), 400
         

@@ -174,10 +174,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Determine if this chapter should have choices (every 2-3 chapters)
       const hasChoices = request.chapterNumber % 3 === 0 && request.chapterNumber < 8;
       
-      // Generate image for the chapter
+      // Generate image for the chapter with character reference
       let imageUrl = null;
       try {
-        imageUrl = await generateStoryImage(storyChapter.content, request.characterImageUrl, request.genre, request.characterName);
+        // Get character data to retrieve image reference
+        const character = await storage.getCharacter(story.characterId);
+        const characterImageUrl = character?.imageUrl || request.characterImageUrl;
+        
+        console.log('Generating image with character reference:', characterImageUrl);
+        imageUrl = await generateStoryImage(storyChapter.content, characterImageUrl, request.genre, request.characterName);
       } catch (imageError) {
         console.error('Failed to generate image:', imageError);
       }
