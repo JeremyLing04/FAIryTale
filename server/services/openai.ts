@@ -13,23 +13,54 @@ export interface StoryGenerationRequest {
   chapterNumber: number;
   previousChoice?: string;
   previousContent?: string;
+  characterImageUrl?: string;
+  characterStats?: {
+    courage?: number;
+    kindness?: number;
+    wisdom?: number;
+    creativity?: number;
+    strength?: number;
+    friendship?: number;
+  };
 }
 
 export interface StoryChapterResponse {
   content: string;
-  choices: {
+  choices?: {
     optionA: {
       text: string;
       description: string;
+      statChanges?: {
+        courage?: number;
+        kindness?: number;
+        wisdom?: number;
+        creativity?: number;
+        strength?: number;
+        friendship?: number;
+      };
     };
     optionB: {
       text: string;
       description: string;
+      statChanges?: {
+        courage?: number;
+        kindness?: number;
+        wisdom?: number;
+        creativity?: number;
+        strength?: number;
+        friendship?: number;
+      };
     };
   };
 }
 
 export async function generateStoryChapter(request: StoryGenerationRequest): Promise<StoryChapterResponse> {
+  // Only add choices every 2-3 chapters, not every chapter
+  const shouldIncludeChoices = request.chapterNumber % 3 === 0 || request.chapterNumber === 1;
+  
+  const statsText = request.characterStats ? 
+    `Character stats: Courage ${request.characterStats.courage}/100, Kindness ${request.characterStats.kindness}/100, Wisdom ${request.characterStats.wisdom}/100, Creativity ${request.characterStats.creativity}/100, Strength ${request.characterStats.strength}/100, Friendship ${request.characterStats.friendship}/100.` : '';
+
   const systemPrompt = `You are a creative children's story writer. Create engaging, age-appropriate stories for kids aged 6-12. 
   All content must be:
   - Positive and encouraging
@@ -37,27 +68,47 @@ export async function generateStoryChapter(request: StoryGenerationRequest): Pro
   - Educational and inspiring
   - Fun and imaginative
   
-  Return your response as JSON with the following structure:
+  ${shouldIncludeChoices ? `Return your response as JSON with choices:
   {
-    "content": "The story chapter content (200-300 words)",
+    "content": "The story chapter content (150-200 words)",
     "choices": {
       "optionA": {
         "text": "Brief choice description",
-        "description": "What might happen if they choose this"
+        "description": "What might happen if they choose this",
+        "statChanges": {
+          "courage": 5,
+          "kindness": 0,
+          "wisdom": 0,
+          "creativity": 0,
+          "strength": 0,
+          "friendship": 0
+        }
       },
       "optionB": {
         "text": "Brief choice description", 
-        "description": "What might happen if they choose this"
+        "description": "What might happen if they choose this",
+        "statChanges": {
+          "courage": 0,
+          "kindness": 5,
+          "wisdom": 0,
+          "creativity": 0,
+          "strength": 0,
+          "friendship": 0
+        }
       }
     }
-  }`;
+  }` : `Return your response as JSON without choices:
+  {
+    "content": "The story chapter content (150-200 words)"
+  }`}`;
 
-  const userPrompt = `Create chapter ${request.chapterNumber} of a ${request.genre} story featuring ${request.characterName}, a ${request.characterType} with a ${request.personality} personality.
+  const userPrompt = `Create chapter ${request.chapterNumber} of a ${request.genre} story featuring ${request.characterName}, a ${request.characterType} with the personality: ${request.personality}.
+  ${statsText}
+  ${request.previousChoice ? `Previous choice made: ${request.previousChoice}` : ''}
+  ${request.previousContent ? `Previous chapter content: ${request.previousContent}` : ''}
   
-  ${request.previousChoice ? `The character previously chose: ${request.previousChoice}` : ''}
-  ${request.previousContent ? `Previous story content: ${request.previousContent}` : ''}
-  
-  Make the story engaging with vivid descriptions and give two meaningful choices that will affect the story direction.`;
+  Keep the language simple and positive. Each chapter should be around 150-200 words.
+  ${shouldIncludeChoices ? 'Include exactly 2 choice options for the reader to continue the story. Each choice should include stat changes based on the action (+5 to +10 for positive traits, -5 to -10 for negative traits). Consider how each choice would affect the character\'s courage, kindness, wisdom, creativity, strength, and friendship.' : 'This chapter should continue the story naturally without choices.'}`;
 
   try {
     const response = await openai.chat.completions.create({
@@ -74,8 +125,13 @@ export async function generateStoryChapter(request: StoryGenerationRequest): Pro
     const result = JSON.parse(response.choices[0].message.content || '{}');
     
     // Validate the response structure
-    if (!result.content || !result.choices || !result.choices.optionA || !result.choices.optionB) {
-      throw new Error('Invalid response structure from OpenAI');
+    if (!result.content) {
+      throw new Error('Invalid response structure from OpenAI - missing content');
+    }
+
+    // If choices are expected but missing, throw error
+    if (shouldIncludeChoices && (!result.choices || !result.choices.optionA || !result.choices.optionB)) {
+      throw new Error('Invalid response structure from OpenAI - missing choices');
     }
 
     return result;

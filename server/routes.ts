@@ -6,7 +6,7 @@ import {
   insertStorySchema,
   insertStoryChapterSchema 
 } from "@shared/schema";
-import { generateStoryChapter, generateStoryImage } from "./services/ollama";
+import { generateStoryChapter, generateStoryImage } from "./services/openai";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -177,7 +177,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate image for the chapter
       let imageUrl = null;
       try {
-        imageUrl = await generateStoryImage(storyChapter.content, request.characterImageUrl, request.genre);
+        imageUrl = await generateStoryImage(storyChapter.content);
       } catch (imageError) {
         console.error('Failed to generate image:', imageError);
       }

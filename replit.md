@@ -23,7 +23,7 @@ Preferred communication style: Simple, everyday language.
 - **Framework**: Express.js with TypeScript
 - **Runtime**: Node.js with ES modules
 - **Storage**: In-memory storage for simplified deployment (no database required)
-- **AI Integration**: Ollama+Mistral for story generation, Python+Stable Diffusion for image creation
+- **AI Integration**: OpenAI GPT-4o for story generation, DALL-E 3 for image creation
 - **Session Management**: Express sessions with in-memory storage
 
 ### Data Storage Design
@@ -64,7 +64,7 @@ The application uses in-memory storage with three main entities:
 ## Data Flow
 
 1. **Character Creation**: User creates a character → Data validated with Zod → Stored in memory via storage interface
-2. **Story Initialization**: User selects character and story genre → Story record created → First chapter generated via OpenAI API
+2. **Story Initialization**: User selects character and story genre → Story record created → First chapter generated via OpenAI GPT-4o
 3. **Story Progression**: User makes choices → New chapter generated based on previous content and choice → Chapter stored and displayed
 4. **Story Completion**: Final chapter reached → Story marked as complete → Available in gallery
 
@@ -84,8 +84,7 @@ The application uses in-memory storage with three main entities:
 - **lucide-react**: Icon library
 
 ### AI Integration
-- **ollama**: Local AI model runtime for Mistral-based story generation
-- **python**: Stable Diffusion image generation with IP-Adapter support
+- **openai**: OpenAI API for GPT-4o story generation and DALL-E 3 image creation
 
 ### Development Tools
 - **typescript**: Static type checking
@@ -108,10 +107,9 @@ The application uses in-memory storage with three main entities:
 
 ### Environment Configuration
 - `NODE_ENV` determines development vs production behavior
-- `PYTHON_VENV_PATH` for custom Python virtual environment paths (optional)
-- Ollama installation required for local AI story generation
-- Python with Stable Diffusion dependencies for image generation
-- Optional Python virtual environment support (automatically detected)
+- `OPENAI_API_KEY` required for AI story and image generation
+- No local AI setup required - uses OpenAI cloud services
+- Simplified deployment with no external dependencies
 - Replit-specific configurations for cloud deployment
 
 ### Python Virtual Environment Setup
@@ -127,10 +125,11 @@ The image generator supports both system Python and virtual environments:
 - The system automatically detects and uses the venv when available
 
 ### Recent Changes
+- **January 18, 2025**: Switched to OpenAI GPT-4o and DALL-E 3 for AI generation, removing local AI dependencies
 - **January 18, 2025**: Removed database dependency - migrated back to in-memory storage for simplified deployment
 - **January 18, 2025**: Updated schema to use TypeScript interfaces instead of Drizzle ORM tables
-- **January 18, 2025**: Enhanced Windows setup automation with custom virtual environment path support
-- **January 18, 2025**: Simplified environment configuration - removed DATABASE_URL requirement
+- **January 18, 2025**: Enhanced Windows setup automation and fixed socket binding issues for Windows compatibility
+- **January 18, 2025**: Simplified environment configuration - now only requires OPENAI_API_KEY
 - **January 17, 2025**: Added comprehensive character stats system with 6 attributes (courage, kindness, wisdom, creativity, strength, friendship)
 - **January 17, 2025**: Implemented character stats editor with sliders in character creator
 - **January 17, 2025**: Added character stats display on character cards and story reader sidebar
