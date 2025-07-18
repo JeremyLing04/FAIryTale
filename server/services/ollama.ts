@@ -54,8 +54,20 @@ export interface StoryChapterResponse {
   };
 }
 
-// Function to check if Ollama is available
+// Function to check if Ollama is available (local or remote)
 async function isOllamaAvailable(): Promise<boolean> {
+  // Check for remote Ollama endpoint first
+  const remoteOllamaUrl = process.env.OLLAMA_HOST || process.env.REMOTE_OLLAMA_URL;
+  if (remoteOllamaUrl) {
+    try {
+      const response = await fetch(`${remoteOllamaUrl}/api/tags`);
+      return response.ok;
+    } catch (error) {
+      console.log('Remote Ollama not accessible:', error.message);
+    }
+  }
+  
+  // Fall back to local Ollama check
   try {
     await execAsync('ollama --version');
     return true;
@@ -182,14 +194,61 @@ Format your response as JSON with this structure:
 }`;
 
   try {
-    // Use Ollama with Mistral model
-    const { stdout } = await execAsync(`ollama run mistral "${prompt.replace(/"/g, '\\"')}"`);
+    // Check for remote Ollama endpoint
+    const remoteOllamaUrl = process.env.OLLAMA_HOST || process.env.REMOTE_OLLAMA_URL;
     
-    // Try to parse the JSON response
-    const jsonMatch = stdout.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const result = JSON.parse(jsonMatch[0]);
-      return result as StoryChapterResponse;
+    if (remoteOllamaUrl) {
+      // Use remote Ollama API
+      const response = await fetch(`${remoteOllamaUrl}/api/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'mistral',
+          prompt: prompt,
+          stream: false
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        const content = result.response;
+        
+        // Try to parse JSON from the response
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsedResult = JSON.parse(jsonMatch[0]);
+          return parsedResult as StoryChapterResponse;
+        }
+        
+        // Fallback if no JSON found
+        return {
+          content: content.trim() || "The adventure continues...",
+          ...(shouldIncludeChoices && {
+            choices: {
+              optionA: {
+                text: "Continue the adventure",
+                description: "Keep exploring"
+              },
+              optionB: {
+                text: "Try something different", 
+                description: "Take a new path"
+              }
+            }
+          })
+        };
+      }
+    } else {
+      // Use local Ollama with CLI
+      const { stdout } = await execAsync(`ollama run mistral "${prompt.replace(/"/g, '\\"')}"`);
+      
+      // Try to parse the JSON response
+      const jsonMatch = stdout.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const result = JSON.parse(jsonMatch[0]);
+        return result as StoryChapterResponse;
+      }
     }
     
     // Fallback if JSON parsing fails
@@ -229,8 +288,20 @@ Format your response as JSON with this structure:
   }
 }
 
-// Function to check if Python is available
+// Function to check if Python is available (local or remote)
 async function isPythonAvailable(): Promise<boolean> {
+  // Check for remote image generation endpoint first
+  const remoteImageUrl = process.env.REMOTE_IMAGE_URL;
+  if (remoteImageUrl) {
+    try {
+      const response = await fetch(`${remoteImageUrl}/health`);
+      return response.ok;
+    } catch (error) {
+      console.log('Remote image service not accessible:', error.message);
+    }
+  }
+  
+  // Fall back to local Python check
   try {
     await execAsync('python --version');
     return true;
@@ -245,11 +316,38 @@ async function isPythonAvailable(): Promise<boolean> {
 }
 
 export async function generateStoryImage(description: string, characterImageUrl?: string, genre: string = "cartoon"): Promise<string> {
-  // Check if Python is available
+  // Check for remote image generation endpoint first
+  const remoteImageUrl = process.env.REMOTE_IMAGE_URL;
+  
+  if (remoteImageUrl) {
+    try {
+      const formData = new FormData();
+      formData.append('description', description);
+      formData.append('genre', genre);
+      
+      if (characterImageUrl) {
+        formData.append('character_image', characterImageUrl);
+      }
+      
+      const response = await fetch(`${remoteImageUrl}/generate`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        return result.image_url || "";
+      }
+    } catch (error) {
+      console.error('Error with remote image generation:', error);
+    }
+  }
+  
+  // Check if local Python is available
   const pythonAvailable = await isPythonAvailable();
   
   if (!pythonAvailable) {
-    console.log('Python not available, skipping image generation');
+    console.log('Python not available locally, skipping image generation');
     // Return the character image if available, or empty string
     return characterImageUrl || "";
   }
