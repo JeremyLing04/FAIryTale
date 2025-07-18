@@ -133,6 +133,7 @@ The image generator supports both system Python and virtual environments:
 - **July 18, 2025**: ✅ Remote SD15+IP-Adapter service working perfectly with Unicode fix applied
 - **July 18, 2025**: ✅ Added dotenv support for environment variable loading
 - **July 18, 2025**: ✅ Fixed TypeScript compilation errors in ollama.ts
+- **July 18, 2025**: ✅ Updated Express server limits to 100MB for larger file uploads
 - **January 18, 2025**: Added remote AI endpoints support - Replit deployment can use local PC's Ollama+Mistral and Stable Diffusion
 - **January 18, 2025**: Created comprehensive deployment guide for hybrid Replit+local AI setup
 - **January 18, 2025**: Added fallback story generation - app works without Ollama/AI dependencies
