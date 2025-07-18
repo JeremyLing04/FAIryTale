@@ -273,6 +273,9 @@ Format your response as JSON with this structure:
       })
     };
   }
+  
+  // This should never be reached due to try-catch, but TypeScript requires a return
+  return generateFallbackStory(request);
 }
 
 // Function to check if Python is available (local or remote)
