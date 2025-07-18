@@ -111,10 +111,10 @@ function generateFallbackStory(request: StoryGenerationRequest): StoryChapterRes
 
   return {
     content,
+    sceneDescription: `${characterName} the ${characterType} standing in a magical forest clearing with sparkling trees`,
     choices: {
       optionA: {
-        text: "Explore the magical forest",
-        description: "Venture deeper into the enchanted woods to discover hidden secrets",
+        text: "Explore the deeper forest paths",
         statChanges: {
           courage: 5,
           creativity: 3,
@@ -122,8 +122,7 @@ function generateFallbackStory(request: StoryGenerationRequest): StoryChapterRes
         }
       },
       optionB: {
-        text: "Help a friendly creature",
-        description: "Stop to assist a lost woodland animal find their way home",
+        text: "Help a lost woodland creature",
         statChanges: {
           kindness: 5,
           friendship: 4,
@@ -157,15 +156,17 @@ ${request.previousChoice ? `Previous choice made: ${request.previousChoice}` : '
 ${request.previousContent ? `Previous chapter content: ${request.previousContent}` : ''}
 
 Keep the language simple and positive. Each chapter should be around 150-200 words.
-${shouldIncludeChoices ? 'Include exactly 2 choice options for the reader to continue the story. Each choice should include stat changes based on the action (+5 to +10 for positive traits, -5 to -10 for negative traits). Consider how each choice would affect the character\'s courage, kindness, wisdom, creativity, strength, and friendship.' : 'This chapter should continue the story naturally without choices.'}
+${shouldIncludeChoices ? 'Include exactly 2 choice options. Keep choice text to one sentence showing what the character will do. Show only stat changes as numbers.' : 'This chapter should continue the story naturally without choices.'}
+
+IMPORTANT: Also generate a short scene description (20-30 words, no commas) describing what the character is doing and where they are for image generation.
 
 Format your response as JSON with this structure:
 {
-  "content": "story content here"${shouldIncludeChoices ? `,
+  "content": "story content here",
+  "sceneDescription": "character action and location in 20-30 words without commas"${shouldIncludeChoices ? `,
   "choices": {
     "optionA": {
-      "text": "brief choice text",
-      "description": "what happens if they choose this",
+      "text": "One sentence what character will do",
       "statChanges": {
         "courage": 5,
         "kindness": 0,
@@ -176,8 +177,7 @@ Format your response as JSON with this structure:
       }
     },
     "optionB": {
-      "text": "brief choice text", 
-      "description": "what happens if they choose this",
+      "text": "One sentence what character will do", 
       "statChanges": {
         "courage": 0,
         "kindness": 5,
@@ -216,21 +216,29 @@ Format your response as JSON with this structure:
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsedResult = JSON.parse(jsonMatch[0]);
+          
+          // Ensure scene description exists
+          if (!parsedResult.sceneDescription && parsedResult.content) {
+            const sentences = parsedResult.content.split(/[.!?]+/).filter(s => s.trim().length > 0);
+            const firstSentence = sentences[0] || parsedResult.content;
+            parsedResult.sceneDescription = `${request.characterName} the ${request.characterType} ${firstSentence.toLowerCase().substring(0, 100).replace(/[^\w\s]/g, ' ').trim()}`;
+          }
+          
           return parsedResult as StoryChapterResponse;
         }
         
         // Fallback if no JSON found
+        const fallbackSceneDesc = `${request.characterName} the ${request.characterType} in a magical adventure scene`;
         return {
           content: content.trim() || "The adventure continues...",
+          sceneDescription: fallbackSceneDesc,
           ...(shouldIncludeChoices && {
             choices: {
               optionA: {
-                text: "Continue the adventure",
-                description: "Keep exploring"
+                text: "Continue the adventure"
               },
               optionB: {
-                text: "Try something different", 
-                description: "Take a new path"
+                text: "Try something different"
               }
             }
           })
@@ -244,21 +252,29 @@ Format your response as JSON with this structure:
       const jsonMatch = stdout.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const result = JSON.parse(jsonMatch[0]);
+        
+        // Ensure scene description exists
+        if (!result.sceneDescription && result.content) {
+          const sentences = result.content.split(/[.!?]+/).filter(s => s.trim().length > 0);
+          const firstSentence = sentences[0] || result.content;
+          result.sceneDescription = `${request.characterName} the ${request.characterType} ${firstSentence.toLowerCase().substring(0, 100).replace(/[^\w\s]/g, ' ').trim()}`;
+        }
+        
         return result as StoryChapterResponse;
       }
       
       // Fallback if JSON parsing fails
+      const fallbackSceneDesc = `${request.characterName} the ${request.characterType} in a magical adventure scene`;
       return {
         content: stdout.trim() || "The adventure continues...",
+        sceneDescription: fallbackSceneDesc,
         ...(shouldIncludeChoices && {
           choices: {
             optionA: {
-              text: "Continue the adventure",
-              description: "Keep exploring"
+              text: "Continue the adventure"
             },
             optionB: {
-              text: "Try something different",
-              description: "Take a new path"
+              text: "Try something different"
             }
           }
         })
@@ -266,18 +282,18 @@ Format your response as JSON with this structure:
     }
   } catch (error: any) {
     console.error('Error generating story with Ollama:', error);
-    // Fallback response
+    // Fallback response with scene description
+    const fallbackSceneDesc = `${request.characterName} the ${request.characterType} exploring a magical realm with adventure ahead`;
     return {
       content: `Chapter ${request.chapterNumber}: ${request.characterName} the ${request.characterType} continues their ${request.genre} adventure. With their ${request.personality} personality, they face new challenges and discover amazing things along the way.`,
+      sceneDescription: fallbackSceneDesc,
       ...(request.chapterNumber % 3 === 0 && {
         choices: {
           optionA: {
-            text: "Continue the adventure",
-            description: "Keep exploring"
+            text: "Continue the adventure"
           },
           optionB: {
-            text: "Try something different",
-            description: "Take a new path"
+            text: "Try something different"
           }
         }
       })
@@ -315,7 +331,7 @@ async function isPythonAvailable(): Promise<boolean> {
   }
 }
 
-export async function generateStoryImage(description: string, characterImageUrl?: string, genre: string = "cartoon", characterName?: string): Promise<string> {
+export async function generateStoryImage(description: string, characterImageUrl?: string, genre: string = "cartoon", characterName?: string, characterType?: string): Promise<string> {
   // Check for remote image generation endpoint first
   const remoteImageUrl = process.env.REMOTE_IMAGE_URL;
   
@@ -323,22 +339,21 @@ export async function generateStoryImage(description: string, characterImageUrl?
     try {
       console.log('Using remote image generation service at:', remoteImageUrl);
       
-      // Limit description length to avoid server errors - your app.py splits by commas
-      const maxDescriptionLength = 200;
-      let limitedDescription = description;
-      if (description.length > maxDescriptionLength) {
+      // Use the generated scene description if available, otherwise use limited story content
+      let imagePrompt = description;
+      if (description.length > 200) {
         // Extract key visual elements for image generation
         const sentences = description.split(/[.!?]+/).filter(s => s.trim().length > 0);
-        limitedDescription = sentences.slice(0, 2).join('. ').substring(0, maxDescriptionLength);
+        imagePrompt = sentences.slice(0, 2).join('. ').substring(0, 200);
       }
       
-      // Clean up text for your Windows environment
-      limitedDescription = limitedDescription.replace(/[^\w\s,.-]/g, ' ').trim();
+      // Clean up text for your Windows environment - remove special characters but keep basic punctuation
+      imagePrompt = imagePrompt.replace(/[^\w\s.-]/g, ' ').trim();
       
       const formData = new FormData();
-      formData.append('description', limitedDescription);
+      formData.append('description', imagePrompt);
       formData.append('genre', genre);
-      if (characterName) formData.append('character_name', characterName);
+      if (characterName) formData.append('character_name', `${characterName} ${characterType || 'character'}`); // Include character type
       
       // Handle character reference image for IP-Adapter
       if (characterImageUrl) {

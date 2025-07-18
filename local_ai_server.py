@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""
-Optimized image server for your custom SD15+IP-Adapter setup
-Designed specifically for: C:\Users\Admin\Downloads\Story\fast_story_gen\app.py
-"""
 
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -22,7 +18,7 @@ APP_PY_PATH = r"C:\Users\Admin\Downloads\Story\fast_story_gen\app.py"
 WORK_DIR = r"C:\Users\Admin\Downloads\Story\fast_story_gen"
 
 # Ensure output directory exists
-OUTPUT_DIR = "outputs/story_images"
+OUTPUT_DIR = r"outputs\story_images"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def get_python_executable():
@@ -51,33 +47,33 @@ def generate_image():
         genre = request.form.get('genre', 'fantasy')
         character_name = request.form.get('character_name', 'hero')
         character_image = request.form.get('character_image')
-        
+
         # Handle uploaded character reference image file
         character_image_file = request.files.get('character_image')
         if character_image_file:
             # Save uploaded image temporarily for processing
             timestamp = int(time.time())
             filename = f"character_ref_{timestamp}.png"
-            temp_upload_path = os.path.join(OUTPUT_DIR, filename)
+            temp_upload_path = os.path.join(WORK_DIR, OUTPUT_DIR, filename)
             character_image_file.save(temp_upload_path)
             character_image = temp_upload_path
             print(f"Saved uploaded character reference image: {temp_upload_path}")
-        
+
         if not description:
             return jsonify({'error': 'Description is required'}), 400
-        
+
         # Create story prompt optimized for your app
         # Your app.py expects comma-separated story segments, so we'll create one segment
         # Also avoid Unicode characters to prevent Windows encoding issues
         story_prompt = description.encode('ascii', 'ignore').decode('ascii')
-        
+
         # Clean up the prompt to avoid special characters that cause encoding issues
         import re
         story_prompt = re.sub(r'[^\x00-\x7F]+', ' ', story_prompt)
-        
+
         # Generate unique timestamp
         timestamp = int(time.time())
-        
+
         # Prepare command
         python_exe = get_python_executable()
         cmd = [
@@ -89,7 +85,7 @@ def generate_image():
             '--steps', '25',  # Balanced quality/speed
             '--scale', '7.5'
         ]
-        
+
         # Handle reference image for IP-Adapter
         temp_image_path = None
         if character_image:
@@ -98,7 +94,7 @@ def generate_image():
                     # Decode base64 image
                     header, encoded = character_image.split(',', 1)
                     image_data = base64.b64decode(encoded)
-                    temp_image_path = os.path.join(OUTPUT_DIR, f'reference_{timestamp}.png')
+                    temp_image_path = os.path.join(WORK_DIR, OUTPUT_DIR, f'reference_{timestamp}.png')
                     with open(temp_image_path, 'wb') as f:
                         f.write(image_data)
                     cmd.extend(['--reference', temp_image_path])
@@ -109,10 +105,10 @@ def generate_image():
                         cmd.extend(['--reference', character_image])
             except Exception as e:
                 print(f"Error processing reference image: {e}")
-        
+
         print(f"Running command: {' '.join(cmd)}")
         print(f"Working directory: {WORK_DIR}")
-        
+
         # Run the generation in your app's directory
         result = subprocess.run(
             cmd, 
@@ -121,21 +117,21 @@ def generate_image():
             text=True, 
             timeout=180  # 3 minutes timeout
         )
-        
+
         # Clean up temp files
         if temp_image_path and os.path.exists(temp_image_path):
             os.remove(temp_image_path)
-        
+
         print(f"Return code: {result.returncode}")
         print(f"STDOUT: {result.stdout}")
         if result.stderr:
             print(f"STDERR: {result.stderr}")
-        
+
         if result.returncode == 0:
             # Your app generates images as 00.png, 01.png, etc.
             full_output_path = os.path.join(WORK_DIR, OUTPUT_DIR)
             generated_files = []
-            
+
             # Look for generated images (your app creates 00.png, 01.png, etc.)
             if os.path.exists(full_output_path):
                 for filename in os.listdir(full_output_path):
@@ -147,23 +143,24 @@ def generate_image():
                     'working_dir': WORK_DIR,
                     'output_dir': OUTPUT_DIR
                 }), 500
-            
+
             if generated_files:
                 # Use the first generated image
                 generated_files.sort()
                 source_file = generated_files[0]
                 source_path = os.path.join(full_output_path, source_file)
-                
+
                 # Copy to our served directory with a web-friendly name
                 web_filename = f"story_{timestamp}.png"
                 web_path = os.path.join('generated_images', web_filename)
                 os.makedirs('generated_images', exist_ok=True)
                 shutil.copy2(source_path, web_path)
-                
+
                 # Get external URL
                 external_host = os.getenv('EXTERNAL_HOST', request.host)
+                print(external_host)
                 image_url = f"http://{external_host}/images/{web_filename}"
-                
+
                 return jsonify({
                     'success': True,
                     'image_url': image_url,
@@ -184,7 +181,7 @@ def generate_image():
                 'stdout': result.stdout,
                 'stderr': result.stderr
             }), 500
-            
+
     except subprocess.TimeoutExpired:
         return jsonify({'error': 'Image generation timed out (3 minutes)'}), 500
     except Exception as e:
@@ -200,11 +197,11 @@ def serve_image(filename):
 def test():
     """Test the setup"""
     python_exe = get_python_executable()
-    
+
     # Test if we can access the app.py
     app_exists = os.path.exists(APP_PY_PATH)
     venv_exists = os.path.exists(VENV_PATH)
-    
+
     return jsonify({
         'message': 'FAIryTale SD15+IP-Adapter Server Test',
         'python_executable': python_exe,
@@ -239,5 +236,5 @@ if __name__ == '__main__':
     print("2. Run: ngrok http 5001")
     print("3. Copy the HTTPS URL to Replit secrets as REMOTE_IMAGE_URL")
     print("="*60)
-    
+
     app.run(host='0.0.0.0', port=5001, debug=True)

@@ -182,7 +182,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const characterImageUrl = character?.imageUrl || request.characterImageUrl;
         
         console.log('Generating image with character reference:', characterImageUrl);
-        imageUrl = await generateStoryImage(storyChapter.content, characterImageUrl, request.genre, request.characterName);
+        // Use scene description if available, otherwise use story content
+        const imageDescription = storyChapter.sceneDescription || storyChapter.content;
+        imageUrl = await generateStoryImage(imageDescription, characterImageUrl, request.genre, request.characterName, request.characterType);
       } catch (imageError) {
         console.error('Failed to generate image:', imageError);
       }

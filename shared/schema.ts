@@ -130,3 +130,52 @@ export const insertStoryChapterSchema = z.object({
 export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
 export type InsertStory = z.infer<typeof insertStorySchema>;
 export type InsertStoryChapter = z.infer<typeof insertStoryChapterSchema>;
+
+// Story generation interfaces
+export interface StoryGenerationRequest {
+  characterName: string;
+  characterType: string;
+  personality: string;
+  characterStats?: {
+    courage: number;
+    kindness: number;
+    wisdom: number;
+    creativity: number;
+    strength: number;
+    friendship: number;
+  };
+  genre: string;
+  chapterNumber: number;
+  previousContent?: string;
+  previousChoice?: string;
+  characterImageUrl?: string;
+}
+
+export interface StoryChapterResponse {
+  content: string;
+  sceneDescription?: string; // Short scene description for image generation
+  choices?: {
+    optionA: {
+      text: string;
+      statChanges?: {
+        courage?: number;
+        kindness?: number;
+        wisdom?: number;
+        creativity?: number;
+        strength?: number;
+        friendship?: number;
+      };
+    };
+    optionB: {
+      text: string;
+      statChanges?: {
+        courage?: number;
+        kindness?: number;
+        wisdom?: number;
+        creativity?: number;
+        strength?: number;
+        friendship?: number;
+      };
+    };
+  } | null;
+}
