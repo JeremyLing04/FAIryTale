@@ -136,11 +136,10 @@ The image generator supports both system Python and virtual environments:
 - The system automatically detects and uses the venv when available
 
 ### Recent Changes
-- **January 18, 2025**: Added AI Assistant for character and story creation with OpenAI GPT-4o integration
-- **January 18, 2025**: Implemented character suggestion system, story idea generation, and automatic image creation
-- **January 18, 2025**: Created collapsible AI assistant panel in character creator with real-time suggestions
-- **January 18, 2025**: Enhanced personality descriptions and power suggestions via AI
+- **January 18, 2025**: Removed AI Assistant due to OpenAI API quota limitations
+- **January 18, 2025**: Temporarily disabled Python image generation due to dependency conflicts  
 - **January 18, 2025**: Fixed automatic first chapter generation when stories are created
+- **January 18, 2025**: Installed Python 3.11 runtime for future image generation features
 - **January 18, 2025**: Removed database dependency - migrated back to in-memory storage for simplified deployment
 - **January 18, 2025**: Updated schema to use TypeScript interfaces instead of Drizzle ORM tables
 - **January 18, 2025**: Enhanced Windows setup automation with custom virtual environment path support
