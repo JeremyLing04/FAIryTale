@@ -54,7 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const character = await storage.getCharacter(newStory.characterId);
         if (character) {
-          const storyChapter = await generateStoryChapter({
+          const firstChapterRequest = {
             characterName: character.name,
             characterType: character.type,
             personality: character.personality,
@@ -69,30 +69,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
               strength: character.strength,
               friendship: character.friendship,
             }
-          });
+          };
+          
+          const storyChapter = await generateStoryChapter(firstChapterRequest);
           
           // Generate image for the first chapter
-          let imageUrl = null;
-          try {
-            imageUrl = await generateStoryImage(storyChapter.content, character.imageUrl, newStory.genre);
-          } catch (imageError) {
-            console.error('Failed to generate image for first chapter:', imageError);
-          }
+          const imageUrl = await generateStoryImage(
+            `${character.name} the ${character.type} begins a ${newStory.genre} adventure`,
+            character.imageUrl,
+            newStory.genre
+          );
           
-          // Save the first chapter
+          // Create the first chapter
           await storage.createStoryChapter({
             storyId: newStory.id,
             chapterNumber: 1,
             content: storyChapter.content,
-            choices: null, // First chapter has no choices
-            hasChoices: false,
-            isGenerated: true,
             imageUrl,
+            choices: storyChapter.choices,
+            hasChoices: !!storyChapter.choices,
+            isGenerated: true,
           });
         }
       } catch (chapterError) {
         console.error('Failed to generate first chapter:', chapterError);
-        // Story creation succeeds even if chapter generation fails
+        // Continue without failing the story creation
       }
       
       res.json(newStory);
