@@ -12,7 +12,6 @@ import { apiRequest } from "@/lib/queryClient";
 import { type InsertCharacter, type Character } from "@shared/schema";
 import ImageUpload from "@/components/image-upload";
 import CharacterStatsEditor from "@/components/character-stats-editor";
-
 import { Wand2, Plus, X, Sparkles } from "lucide-react";
 
 export default function CharacterCreator() {
@@ -196,8 +195,6 @@ export default function CharacterCreator() {
             }
           </p>
         </div>
-
-
 
         <Card className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl">
           <CardHeader>

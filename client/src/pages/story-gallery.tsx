@@ -48,20 +48,12 @@ export default function StoryGallery() {
         {/* Stories Section */}
         <section className="mb-16">
           <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-8">
-              <Link href="/my-stories">
-                <h2 className="fredoka text-3xl text-white flex items-center hover:text-coral transition-colors cursor-pointer">
-                  <BookOpen className="mr-3 w-8 h-8" />
-                  My Stories
-                </h2>
-              </Link>
-              <Link href="/shared-stories">
-                <h2 className="fredoka text-2xl text-white flex items-center hover:text-turquoise transition-colors cursor-pointer">
-                  <Users className="mr-2 w-6 h-6" />
-                  Stories from Friends
-                </h2>
-              </Link>
-            </div>
+            <Link href="/my-stories">
+              <h2 className="fredoka text-3xl text-white flex items-center hover:text-coral transition-colors cursor-pointer">
+                <BookOpen className="mr-3 w-8 h-8" />
+                My Stories
+              </h2>
+            </Link>
             <Link href="/character-creator">
               <Button className="bg-coral hover:bg-[#ff5252] text-white px-6 py-3 rounded-full fredoka">
                 <Plus className="mr-2 w-5 h-5" />

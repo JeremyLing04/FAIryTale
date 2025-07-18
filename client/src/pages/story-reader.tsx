@@ -16,7 +16,6 @@ import { type Story, type Character, type StoryChapter } from "@shared/schema";
 import StoryInterface from "@/components/story-interface";
 import LoadingAnimation from "@/components/loading-animation";
 import CharacterStats from "@/components/character-stats";
-import StoryShareButton from "@/components/story-share-button";
 import { ArrowLeft, BookOpen, Sparkles, CheckCircle, ChevronDown } from "lucide-react";
 
 export default function StoryReader() {
@@ -238,11 +237,6 @@ export default function StoryReader() {
                   <Sparkles className="mr-2 w-5 h-5" />
                   Start New Adventure
                 </Button>
-              </div>
-              
-              {/* Story Sharing Section */}
-              <div className="mb-6">
-                <StoryShareButton story={story} />
               </div>
               <Button
                 onClick={() => setLocation("/gallery")}
