@@ -55,14 +55,17 @@ export interface StoryChapterResponse {
 
 // Check if Ollama is available (local or remote)
 export async function isOllamaAvailable(): Promise<boolean> {
-  // Check for remote Ollama endpoint first
-  const remoteOllamaUrl = process.env.OLLAMA_HOST || process.env.REMOTE_OLLAMA_URL;
-  if (remoteOllamaUrl) {
+  // Check for remote unified AI server (both Ollama and images on same endpoint)
+  const remoteAiUrl = process.env.OLLAMA_HOST || process.env.REMOTE_IMAGE_URL;
+  if (remoteAiUrl) {
     try {
-      const response = await fetch(`${remoteOllamaUrl}/api/tags`);
-      return response.ok;
+      const response = await fetch(`${remoteAiUrl}/health`);
+      if (response.ok) {
+        const health = await response.json();
+        return health.services?.ollama?.running || false;
+      }
     } catch (error: any) {
-      console.log('Remote Ollama not accessible:', error?.message || error);
+      console.log('Remote AI server not accessible:', error?.message || error);
     }
   }
   
@@ -181,12 +184,12 @@ Format your response as JSON with this structure:
   }` : ''}
 }`;
 
-    // Check for remote Ollama endpoint
-    const remoteOllamaUrl = process.env.OLLAMA_HOST || process.env.REMOTE_OLLAMA_URL;
+    // Check for remote unified AI server
+    const remoteAiUrl = process.env.OLLAMA_HOST || process.env.REMOTE_IMAGE_URL;
     
-    if (remoteOllamaUrl) {
-      // Use remote Ollama API
-      const response = await fetch(`${remoteOllamaUrl}/api/generate`, {
+    if (remoteAiUrl) {
+      // Use remote unified AI server
+      const response = await fetch(`${remoteAiUrl}/api/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -280,14 +283,17 @@ Format your response as JSON with this structure:
 
 // Function to check if Python is available (local or remote)
 async function isPythonAvailable(): Promise<boolean> {
-  // Check for remote image generation endpoint first
-  const remoteImageUrl = process.env.REMOTE_IMAGE_URL;
-  if (remoteImageUrl) {
+  // Check for remote unified AI server (handles both Ollama and images)
+  const remoteAiUrl = process.env.OLLAMA_HOST || process.env.REMOTE_IMAGE_URL;
+  if (remoteAiUrl) {
     try {
-      const response = await fetch(`${remoteImageUrl}/health`);
-      return response.ok;
+      const response = await fetch(`${remoteAiUrl}/health`);
+      if (response.ok) {
+        const health = await response.json();
+        return health.services?.image_generator?.app_py_exists || false;
+      }
     } catch (error: any) {
-      console.log('Remote image service not accessible:', error?.message || error);
+      console.log('Remote AI server not accessible:', error?.message || error);
     }
   }
   
@@ -306,10 +312,10 @@ async function isPythonAvailable(): Promise<boolean> {
 }
 
 export async function generateStoryImage(description: string, characterImageUrl?: string, genre: string = "cartoon", characterName?: string): Promise<string> {
-  // Check for remote image generation endpoint first
-  const remoteImageUrl = process.env.REMOTE_IMAGE_URL;
+  // Check for remote unified AI server
+  const remoteAiUrl = process.env.OLLAMA_HOST || process.env.REMOTE_IMAGE_URL;
   
-  if (remoteImageUrl) {
+  if (remoteAiUrl) {
     try {
       const formData = new FormData();
       formData.append('description', description);
@@ -323,7 +329,7 @@ export async function generateStoryImage(description: string, characterImageUrl?
         formData.append('character_image', characterImageUrl);
       }
       
-      const response = await fetch(`${remoteImageUrl}/generate`, {
+      const response = await fetch(`${remoteAiUrl}/generate`, {
         method: 'POST',
         body: formData
       });
