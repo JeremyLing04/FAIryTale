@@ -127,6 +127,9 @@ The image generator supports both system Python and virtual environments:
 - The system automatically detects and uses the venv when available
 
 ### Recent Changes
+- **January 18, 2025**: Fixed critical port conflict - Ollama uses 11434, SD15+IP-Adapter uses 5001
+- **January 18, 2025**: Created Windows batch script for automated service startup
+- **January 18, 2025**: Added port configuration guide and service separation
 - **January 18, 2025**: Fixed TypeScript compilation errors and Unicode issues in Python server
 - **January 18, 2025**: Created optimized local_ai_server.py for user's specific SD15+IP-Adapter setup
 - **January 18, 2025**: Added integration test scripts to verify setup before deployment
