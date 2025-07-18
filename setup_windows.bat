@@ -23,12 +23,11 @@ if %errorlevel% neq 0 (
 :: Check if .env file exists
 if not exist .env (
     echo Creating .env file...
-    echo DATABASE_URL=postgresql://username:password@host:port/database > .env
-    echo NODE_ENV=development >> .env
+    echo NODE_ENV=development > .env
     echo # Add your custom Python virtual environment path if needed >> .env
     echo # PYTHON_VENV_PATH=C:\Users\Admin\Downloads\Story\fast_story_gen\venv >> .env
     echo.
-    echo Please edit the .env file with your database URL and other settings.
+    echo Optional: Edit the .env file to customize settings.
 )
 
 :: Check if Ollama is installed
@@ -64,12 +63,11 @@ if %errorlevel% neq 0 (
     )
 )
 
-:: Check for database setup
+:: Setup complete
 echo.
 echo Setup complete! Next steps:
-echo 1. Edit .env file with your database URL
-echo 2. Run: npm run db:push (to setup database)
-echo 3. Run: npm run dev (to start the application)
+echo 1. Run: npm run dev (to start the application)
+echo 2. Open http://localhost:5000 in your browser
 echo.
 echo For your specific setup:
 echo - Virtual environment: C:\Users\Admin\Downloads\Story\fast_story_gen\venv

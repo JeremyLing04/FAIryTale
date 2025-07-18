@@ -4,9 +4,10 @@
 
 ### Required Software
 1. **Node.js 18+** - [Download from nodejs.org](https://nodejs.org/)
-2. **Ollama** - [Download from ollama.com](https://ollama.com/download)
-3. **Python 3.8+** - [Download from python.org](https://www.python.org/downloads/)
-4. **PostgreSQL** - Either local installation or cloud database
+2. **Ollama** - [Download from ollama.com](https://ollama.com/download) *(for story generation)*
+3. **Python 3.8+** - [Download from python.org](https://www.python.org/downloads/) *(for image generation)*
+
+**Note:** Database setup is not required! The application uses in-memory storage for simplified deployment.
 
 ## Quick Start
 
@@ -29,44 +30,19 @@ bash setup_venv.sh
 setup_venv.bat
 ```
 
-### 2. Database Setup
-
-**Option A: Use Neon Database (Recommended)**
-1. Sign up at [neon.tech](https://neon.tech)
-2. Create a new database
-3. Copy the connection string
-
-**Option B: Local PostgreSQL**
-1. Install PostgreSQL locally
-2. Create a database named `storymagic`
-3. Note your connection details
-
-### 3. Environment Configuration
-Create a `.env` file in the root directory:
+### 2. Environment Configuration (Optional)
+Create a `.env` file only if you need custom settings:
 ```env
-DATABASE_URL=postgresql://username:password@host:port/database
 NODE_ENV=development
-```
-
-**Windows-specific paths:**
-If you're using a custom virtual environment path, add it to your `.env` file:
-```env
-DATABASE_URL=postgresql://username:password@host:port/database
-NODE_ENV=development
+# Optional: Custom Python virtual environment path
 PYTHON_VENV_PATH=C:\Users\Admin\Downloads\Story\fast_story_gen\venv
 ```
 
-Example setup:
+**Example Windows setup:**
 - Virtual environment: `C:\Users\Admin\Downloads\Story\fast_story_gen\venv`
 - Project path: `C:\Users\Admin\Downloads\Story\StorySparkAI\`
 
-### 4. Database Migration
-```bash
-# Push the database schema
-npm run db:push
-```
-
-### 5. Start Development Server
+### 3. Start Development Server
 ```bash
 npm run dev
 ```
@@ -170,9 +146,7 @@ This will give you full access to:
 # Start development server
 npm run dev
 
-# Database operations
-npm run db:push          # Push schema changes
-npm run db:studio        # Open database GUI
+# No database operations needed!
 
 # Build for production
 npm run build
@@ -188,7 +162,6 @@ setup_windows.bat        # Automated Windows setup script
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `NODE_ENV` | No | Environment (development/production) |
 | `PYTHON_VENV_PATH` | No | Custom Python virtual environment path |
 | `OPENAI_API_KEY` | No | Optional for fallback AI generation |

@@ -1,43 +1,42 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const characters = pgTable("characters", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  type: text("type").notNull(), // custom or predefined types
-  personality: text("personality").notNull(),
-  powers: text("powers").array().default([]),
-  imageUrl: text("image_url"), // character image upload
+// Character types and interfaces
+export interface Character {
+  id: number;
+  name: string;
+  type: string; // custom or predefined types
+  personality: string;
+  powers: string[];
+  imageUrl?: string; // character image upload
   // Character stats (0-100 scale)
-  courage: integer("courage").default(50),
-  kindness: integer("kindness").default(50),
-  wisdom: integer("wisdom").default(50),
-  creativity: integer("creativity").default(50),
-  strength: integer("strength").default(50),
-  friendship: integer("friendship").default(50),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+  courage: number;
+  kindness: number;
+  wisdom: number;
+  creativity: number;
+  strength: number;
+  friendship: number;
+  createdAt: Date;
+}
 
-export const stories = pgTable("stories", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  genre: text("genre").notNull(), // "adventure", "fantasy", "mystery", etc.
-  characterId: integer("character_id").references(() => characters.id),
-  currentChapter: integer("current_chapter").default(1),
-  totalChapters: integer("total_chapters").default(5),
-  isCompleted: boolean("is_completed").default(false),
-  imageUrl: text("image_url"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+export interface Story {
+  id: number;
+  title: string;
+  genre: string; // "adventure", "fantasy", "mystery", etc.
+  characterId: number;
+  currentChapter: number;
+  totalChapters: number;
+  isCompleted: boolean;
+  imageUrl?: string;
+  createdAt: Date;
+}
 
-export const storyChapters = pgTable("story_chapters", {
-  id: serial("id").primaryKey(),
-  storyId: integer("story_id").references(() => stories.id),
-  chapterNumber: integer("chapter_number").notNull(),
-  content: text("content").notNull(),
-  imageUrl: text("image_url"),
-  choices: json("choices").$type<{
+export interface StoryChapter {
+  id: number;
+  storyId: number;
+  chapterNumber: number;
+  content: string;
+  imageUrl?: string;
+  choices?: {
     optionA: {
       text: string;
       description: string;
@@ -62,30 +61,72 @@ export const storyChapters = pgTable("story_chapters", {
         friendship?: number;
       };
     };
-  } | null>(), // null when no choices available
-  hasChoices: boolean("has_choices").default(false),
-  isGenerated: boolean("is_generated").default(true), // track if chapter is dynamically generated
-  createdAt: timestamp("created_at").defaultNow(),
+  } | null; // null when no choices available
+  hasChoices: boolean;
+  isGenerated: boolean; // track if chapter is dynamically generated
+  createdAt: Date;
+}
+
+// Zod schemas for validation
+export const insertCharacterSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  type: z.string().min(1, "Type is required"),
+  personality: z.string().min(1, "Personality is required"),
+  powers: z.array(z.string()).default([]),
+  imageUrl: z.string().optional(),
+  courage: z.number().min(0).max(100).default(50),
+  kindness: z.number().min(0).max(100).default(50),
+  wisdom: z.number().min(0).max(100).default(50),
+  creativity: z.number().min(0).max(100).default(50),
+  strength: z.number().min(0).max(100).default(50),
+  friendship: z.number().min(0).max(100).default(50),
 });
 
-export const insertCharacterSchema = createInsertSchema(characters).omit({
-  id: true,
-  createdAt: true,
+export const insertStorySchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  genre: z.string().min(1, "Genre is required"),
+  characterId: z.number(),
+  currentChapter: z.number().default(1),
+  totalChapters: z.number().default(5),
+  isCompleted: z.boolean().default(false),
+  imageUrl: z.string().optional(),
 });
 
-export const insertStorySchema = createInsertSchema(stories).omit({
-  id: true,
-  createdAt: true,
+export const insertStoryChapterSchema = z.object({
+  storyId: z.number(),
+  chapterNumber: z.number(),
+  content: z.string().min(1, "Content is required"),
+  imageUrl: z.string().optional(),
+  choices: z.object({
+    optionA: z.object({
+      text: z.string(),
+      description: z.string(),
+      statChanges: z.object({
+        courage: z.number().optional(),
+        kindness: z.number().optional(),
+        wisdom: z.number().optional(),
+        creativity: z.number().optional(),
+        strength: z.number().optional(),
+        friendship: z.number().optional(),
+      }).optional(),
+    }),
+    optionB: z.object({
+      text: z.string(),
+      description: z.string(),
+      statChanges: z.object({
+        courage: z.number().optional(),
+        kindness: z.number().optional(),
+        wisdom: z.number().optional(),
+        creativity: z.number().optional(),
+        strength: z.number().optional(),
+        friendship: z.number().optional(),
+      }).optional(),
+    }),
+  }).nullable().optional(),
+  hasChoices: z.boolean().default(false),
+  isGenerated: z.boolean().default(true),
 });
 
-export const insertStoryChapterSchema = createInsertSchema(storyChapters).omit({
-  id: true,
-  createdAt: true,
-});
-
-export type Character = typeof characters.$inferSelect;
 export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
-export type Story = typeof stories.$inferSelect;
 export type InsertStory = z.infer<typeof insertStorySchema>;
-export type StoryChapter = typeof storyChapters.$inferSelect;
 export type InsertStoryChapter = z.infer<typeof insertStoryChapterSchema>;

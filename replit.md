@@ -22,14 +22,13 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture
 - **Framework**: Express.js with TypeScript
 - **Runtime**: Node.js with ES modules
-- **Database ORM**: Drizzle ORM configured for PostgreSQL
-- **Database Provider**: Neon Database (serverless PostgreSQL)
-- **AI Integration**: OpenAI API for story generation and image creation
-- **Session Management**: Express sessions with PostgreSQL storage
+- **Storage**: In-memory storage for simplified deployment (no database required)
+- **AI Integration**: Ollama+Mistral for story generation, Python+Stable Diffusion for image creation
+- **Session Management**: Express sessions with in-memory storage
 
-### Database Design
-The application uses a PostgreSQL database with three main entities:
-- **Characters**: Store character details including appearance, personality, and special powers
+### Data Storage Design
+The application uses in-memory storage with three main entities:
+- **Characters**: Store character details including appearance, personality, special powers, and stats
 - **Stories**: Track story metadata, progress, and completion status
 - **Story Chapters**: Individual story segments with content, images, and interactive choices
 
@@ -64,7 +63,7 @@ The application uses a PostgreSQL database with three main entities:
 
 ## Data Flow
 
-1. **Character Creation**: User creates a character → Data validated with Zod → Stored in PostgreSQL via Drizzle ORM
+1. **Character Creation**: User creates a character → Data validated with Zod → Stored in memory via storage interface
 2. **Story Initialization**: User selects character and story genre → Story record created → First chapter generated via OpenAI API
 3. **Story Progression**: User makes choices → New chapter generated based on previous content and choice → Chapter stored and displayed
 4. **Story Completion**: Final chapter reached → Story marked as complete → Available in gallery
@@ -72,11 +71,11 @@ The application uses a PostgreSQL database with three main entities:
 ## External Dependencies
 
 ### Core Dependencies
-- **@neondatabase/serverless**: Serverless PostgreSQL database connection
-- **drizzle-orm**: Type-safe database ORM
 - **@tanstack/react-query**: Server state management and caching
 - **wouter**: Lightweight React router
 - **zod**: Runtime type validation and schema definition
+- **express**: Backend web framework
+- **tsx**: TypeScript execution and build tool
 
 ### UI Dependencies
 - **@radix-ui/***: Headless UI components for accessibility
@@ -91,7 +90,7 @@ The application uses a PostgreSQL database with three main entities:
 ### Development Tools
 - **typescript**: Static type checking
 - **vite**: Fast build tool and development server
-- **drizzle-kit**: Database schema management and migrations
+- **tsx**: TypeScript compilation and execution
 
 ## Deployment Strategy
 
@@ -104,12 +103,12 @@ The application uses a PostgreSQL database with three main entities:
 ### Production Build
 - Frontend: Vite builds React app to static files served by Express
 - Backend: ESBuild bundles Express server to single JavaScript file
-- Database: PostgreSQL hosted on Neon (serverless)
+- Storage: In-memory storage (no database required)
 - Static assets served directly by Express
 
 ### Environment Configuration
 - `NODE_ENV` determines development vs production behavior
-- `DATABASE_URL` for PostgreSQL connection with Neon database
+- `PYTHON_VENV_PATH` for custom Python virtual environment paths (optional)
 - Ollama installation required for local AI story generation
 - Python with Stable Diffusion dependencies for image generation
 - Optional Python virtual environment support (automatically detected)
@@ -128,6 +127,10 @@ The image generator supports both system Python and virtual environments:
 - The system automatically detects and uses the venv when available
 
 ### Recent Changes
+- **January 18, 2025**: Removed database dependency - migrated back to in-memory storage for simplified deployment
+- **January 18, 2025**: Updated schema to use TypeScript interfaces instead of Drizzle ORM tables
+- **January 18, 2025**: Enhanced Windows setup automation with custom virtual environment path support
+- **January 18, 2025**: Simplified environment configuration - removed DATABASE_URL requirement
 - **January 17, 2025**: Added comprehensive character stats system with 6 attributes (courage, kindness, wisdom, creativity, strength, friendship)
 - **January 17, 2025**: Implemented character stats editor with sliders in character creator
 - **January 17, 2025**: Added character stats display on character cards and story reader sidebar
@@ -141,8 +144,5 @@ The image generator supports both system Python and virtual environments:
 - **January 16, 2025**: Implemented character and story artwork image upload (5MB limit)
 - **January 16, 2025**: Increased Express body parser limit to 10MB to handle image uploads
 - **January 16, 2025**: Added continue button for chapters without choices
-- **January 16, 2025**: Created PostgreSQL database and migrated from in-memory storage
-- **January 16, 2025**: Implemented fully dynamic chapter generation system with database persistence
-- **January 16, 2025**: Updated story progression to generate chapters on-demand instead of pre-generating
 
 The application is designed to be easily deployable on platforms like Replit, with automatic environment detection and appropriate build/serve strategies for each environment.
