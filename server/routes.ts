@@ -49,6 +49,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const story = insertStorySchema.parse(req.body);
       const newStory = await storage.createStory(story);
+      
+      // Automatically generate the first chapter
+      try {
+        const character = await storage.getCharacter(newStory.characterId);
+        if (character) {
+          const firstChapterRequest = {
+            characterName: character.name,
+            characterType: character.type,
+            personality: character.personality,
+            genre: newStory.genre,
+            chapterNumber: 1,
+            characterImageUrl: character.imageUrl,
+            characterStats: {
+              courage: character.courage,
+              kindness: character.kindness,
+              wisdom: character.wisdom,
+              creativity: character.creativity,
+              strength: character.strength,
+              friendship: character.friendship,
+            }
+          };
+          
+          const storyChapter = await generateStoryChapter(firstChapterRequest);
+          
+          // Generate image for the first chapter
+          const imageUrl = await generateStoryImage(
+            `${character.name} the ${character.type} begins a ${newStory.genre} adventure`,
+            character.imageUrl,
+            newStory.genre
+          );
+          
+          // Create the first chapter
+          await storage.createStoryChapter({
+            storyId: newStory.id,
+            chapterNumber: 1,
+            content: storyChapter.content,
+            imageUrl,
+            choices: storyChapter.choices,
+            hasChoices: !!storyChapter.choices,
+            isGenerated: true,
+          });
+        }
+      } catch (chapterError) {
+        console.error('Failed to generate first chapter:', chapterError);
+        // Continue without failing the story creation
+      }
+      
       res.json(newStory);
     } catch (error) {
       res.status(400).json({ message: "Invalid story data" });
