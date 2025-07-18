@@ -15,17 +15,23 @@ export interface IStorage {
   createCharacter(character: InsertCharacter): Promise<Character>;
   getCharacter(id: number): Promise<Character | undefined>;
   getAllCharacters(): Promise<Character[]>;
+  updateCharacter(id: number, updates: Partial<Character>): Promise<Character | undefined>;
+  deleteCharacter(id: number): Promise<void>;
   
   // Story operations
   createStory(story: InsertStory): Promise<Story>;
   getStory(id: number): Promise<Story | undefined>;
   getAllStories(): Promise<Story[]>;
   updateStory(id: number, updates: Partial<Story>): Promise<Story | undefined>;
+  deleteStory(id: number): Promise<void>;
   
   // Story chapter operations
   createStoryChapter(chapter: InsertStoryChapter): Promise<StoryChapter>;
   getStoryChapter(storyId: number, chapterNumber: number): Promise<StoryChapter | undefined>;
   getStoryChapters(storyId: number): Promise<StoryChapter[]>;
+  updateStoryChapter(id: number, updates: Partial<StoryChapter>): Promise<StoryChapter | undefined>;
+  deleteStoryChapter(id: number): Promise<void>;
+  getLatestChapter(storyId: number): Promise<StoryChapter | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -52,6 +58,19 @@ export class MemStorage implements IStorage {
 
   async getAllCharacters(): Promise<Character[]> {
     return Array.from(this.characters.values());
+  }
+
+  async updateCharacter(id: number, updates: Partial<Character>): Promise<Character | undefined> {
+    const character = this.characters.get(id);
+    if (!character) return undefined;
+    
+    const updatedCharacter = { ...character, ...updates };
+    this.characters.set(id, updatedCharacter);
+    return updatedCharacter;
+  }
+
+  async deleteCharacter(id: number): Promise<void> {
+    this.characters.delete(id);
   }
 
   async createStory(insertStory: InsertStory): Promise<Story> {
@@ -81,6 +100,10 @@ export class MemStorage implements IStorage {
     return updatedStory;
   }
 
+  async deleteStory(id: number): Promise<void> {
+    this.stories.delete(id);
+  }
+
   async createStoryChapter(insertChapter: InsertStoryChapter): Promise<StoryChapter> {
     const chapter: StoryChapter = {
       ...insertChapter,
@@ -102,6 +125,31 @@ export class MemStorage implements IStorage {
       .filter(chapter => chapter.storyId === storyId)
       .sort((a, b) => a.chapterNumber - b.chapterNumber);
   }
+
+  async updateStoryChapter(id: number, updates: Partial<StoryChapter>): Promise<StoryChapter | undefined> {
+    for (const [key, chapter] of this.storyChapters) {
+      if (chapter.id === id) {
+        const updatedChapter = { ...chapter, ...updates };
+        this.storyChapters.set(key, updatedChapter);
+        return updatedChapter;
+      }
+    }
+    return undefined;
+  }
+
+  async deleteStoryChapter(id: number): Promise<void> {
+    for (const [key, chapter] of this.storyChapters) {
+      if (chapter.id === id) {
+        this.storyChapters.delete(key);
+        break;
+      }
+    }
+  }
+
+  async getLatestChapter(storyId: number): Promise<StoryChapter | undefined> {
+    const chapters = await this.getStoryChapters(storyId);
+    return chapters.length > 0 ? chapters[chapters.length - 1] : undefined;
+  }
 }
 
 import { db } from "./db";
@@ -120,6 +168,18 @@ export class DatabaseStorage implements IStorage {
 
   async getAllCharacters(): Promise<Character[]> {
     return await db.select().from(characters);
+  }
+
+  async updateCharacter(id: number, updates: Partial<Character>): Promise<Character | undefined> {
+    const [character] = await db.update(characters)
+      .set(updates)
+      .where(eq(characters.id, id))
+      .returning();
+    return character || undefined;
+  }
+
+  async deleteCharacter(id: number): Promise<void> {
+    await db.delete(characters).where(eq(characters.id, id));
   }
 
   async createStory(insertStory: InsertStory): Promise<Story> {
@@ -144,6 +204,10 @@ export class DatabaseStorage implements IStorage {
     return story || undefined;
   }
 
+  async deleteStory(id: number): Promise<void> {
+    await db.delete(stories).where(eq(stories.id, id));
+  }
+
   async createStoryChapter(insertChapter: InsertStoryChapter): Promise<StoryChapter> {
     const [chapter] = await db.insert(storyChapters).values(insertChapter).returning();
     return chapter;
@@ -165,6 +229,41 @@ export class DatabaseStorage implements IStorage {
       .where(eq(storyChapters.storyId, storyId))
       .orderBy(asc(storyChapters.chapterNumber));
   }
+
+  async updateStoryChapter(id: number, updates: Partial<StoryChapter>): Promise<StoryChapter | undefined> {
+    const [chapter] = await db.update(storyChapters)
+      .set(updates)
+      .where(eq(storyChapters.id, id))
+      .returning();
+    return chapter || undefined;
+  }
+
+  async deleteStoryChapter(id: number): Promise<void> {
+    await db.delete(storyChapters).where(eq(storyChapters.id, id));
+  }
+
+  async getLatestChapter(storyId: number): Promise<StoryChapter | undefined> {
+    const chapters = await this.getStoryChapters(storyId);
+    return chapters.length > 0 ? chapters[chapters.length - 1] : undefined;
+  }
 }
 
-export const storage = new DatabaseStorage();
+// Storage configuration - choose based on environment
+import { FirebaseStorage } from './firebase-storage';
+
+function createStorage(): IStorage {
+  const useFirebase = process.env.USE_FIREBASE === 'true' || process.env.NODE_ENV === 'development';
+  
+  if (useFirebase && process.env.FIREBASE_PROJECT_ID) {
+    console.log('Using Firebase storage for local development');
+    return new FirebaseStorage();
+  } else if (process.env.DATABASE_URL) {
+    console.log('Using PostgreSQL database storage');
+    return new DatabaseStorage();
+  } else {
+    console.log('Using in-memory storage');
+    return new MemStorage();
+  }
+}
+
+export const storage = createStorage();
