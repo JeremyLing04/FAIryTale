@@ -96,6 +96,20 @@ The application will be available at `http://localhost:5000`
 - Character-consistent artwork using IP-Adapter
 - Automatic image generation for story chapters
 
+## System Status
+
+The StoryMagic application includes several components that may not be available in all environments:
+
+### Core Features (Always Available)
+✓ **Character Creation** - Create characters with stats, personality, and powers
+✓ **Story Management** - Create, save, and organize stories
+✓ **Database Integration** - PostgreSQL with persistent storage
+✓ **Character Stats System** - 6 attributes that track and influence stories
+
+### Optional Features (Require Dependencies)
+⚠️ **AI Story Generation** - Requires Ollama + Mistral model
+⚠️ **Image Generation** - Requires Python + Stable Diffusion dependencies
+
 ## Troubleshooting
 
 ### Common Issues
@@ -104,11 +118,13 @@ The application will be available at `http://localhost:5000`
 - Install Ollama from ollama.com
 - Run `ollama pull mistral` to download the model
 - Ensure Ollama is in your system PATH
+- **Workaround**: Story creation still works, chapters just won't auto-generate
 
 **"python: not found"**
 - Install Python 3.8+ from python.org
 - On Windows, ensure Python is added to PATH during installation
 - Try `python3` instead of `python` on Linux/Mac
+- **Workaround**: Stories work without images, manually add images later
 
 **Database connection errors**
 - Verify your DATABASE_URL is correct
@@ -119,6 +135,21 @@ The application will be available at `http://localhost:5000`
 - Install Python dependencies: `pip install -r python_requirements.txt`
 - For GPU acceleration, install CUDA-compatible PyTorch
 - Virtual environment setup is recommended to avoid conflicts
+
+### Minimal Setup (Just Database)
+If you only want to test the character stats system without AI features:
+```bash
+npm install
+# Set up DATABASE_URL in .env
+npm run db:push
+npm run dev
+```
+
+This will give you full access to:
+- Character creation with stats system
+- Story creation and management
+- Character stats tracking and updates
+- All UI components and navigation
 
 ### Development Commands
 
