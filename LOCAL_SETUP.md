@@ -115,6 +115,10 @@ The StoryMagic application includes several components that may not be available
 - **Custom venv path**: If using a custom virtual environment (e.g., `C:\Users\Admin\Downloads\Story\fast_story_gen\venv`), the system will automatically detect and use it
 - **Workaround**: Stories work without images, manually add images later
 
+**Windows Socket Error (ENOTSUP)**
+- Use `start_windows.bat` instead of `npm start` for production on Windows
+- The script automatically configures the correct host settings for Windows compatibility
+
 **Database connection errors**
 - Verify your DATABASE_URL is correct
 - Ensure the database server is running
@@ -151,11 +155,15 @@ npm run dev
 # Build for production
 npm run build
 
+# Start production server (Linux/Mac)
+npm start
+
 # Type checking
 npm run type-check
 
-# Windows-specific setup
+# Windows-specific commands
 setup_windows.bat        # Automated Windows setup script
+start_windows.bat        # Start production server on Windows
 ```
 
 ## Environment Variables

@@ -66,7 +66,13 @@ if %errorlevel% neq 0 (
 :: Setup complete
 echo.
 echo Setup complete! Next steps:
-echo 1. Run: npm run dev (to start the application)
+echo.
+echo Development mode:
+echo 1. Run: npm run dev
+echo 2. Open http://localhost:5000 in your browser
+echo.
+echo Production mode:
+echo 1. Run: start_windows.bat
 echo 2. Open http://localhost:5000 in your browser
 echo.
 echo For your specific setup:
