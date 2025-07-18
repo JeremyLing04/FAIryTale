@@ -190,7 +190,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         choices: hasChoices ? storyChapter.choices : null,
         hasChoices,
         isGenerated: true,
-        imageUrl,
+        imageUrl: imageUrl || undefined,
       };
       
       const savedChapter = await storage.createStoryChapter(chapterData);

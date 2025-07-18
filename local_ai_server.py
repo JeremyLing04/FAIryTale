@@ -56,7 +56,8 @@ def generate_image():
             return jsonify({'error': 'Description is required'}), 400
         
         # Create story prompt optimized for your app
-        story_prompt = f"{description}, {genre} style, detailed illustration"
+        # Your app.py expects comma-separated story segments, so we'll create one segment
+        story_prompt = description
         
         # Generate unique timestamp
         timestamp = int(time.time())
@@ -119,10 +120,17 @@ def generate_image():
             full_output_path = os.path.join(WORK_DIR, OUTPUT_DIR)
             generated_files = []
             
-            # Look for generated images
-            for filename in os.listdir(full_output_path):
-                if filename.endswith('.png') and filename[0].isdigit():
-                    generated_files.append(filename)
+            # Look for generated images (your app creates 00.png, 01.png, etc.)
+            if os.path.exists(full_output_path):
+                for filename in os.listdir(full_output_path):
+                    if filename.endswith('.png') and filename[0].isdigit():
+                        generated_files.append(filename)
+            else:
+                return jsonify({
+                    'error': f'Output directory not found: {full_output_path}',
+                    'working_dir': WORK_DIR,
+                    'output_dir': OUTPUT_DIR
+                }), 500
             
             if generated_files:
                 # Use the first generated image

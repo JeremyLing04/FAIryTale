@@ -95,7 +95,7 @@ export async function generateStoryImage(description: string): Promise<string> {
       quality: "standard",
     });
 
-    return response.data[0].url || '';
+    return response.data?.[0]?.url || '';
   } catch (error) {
     console.error('Error generating story image:', error);
     // Return a placeholder or empty string instead of throwing

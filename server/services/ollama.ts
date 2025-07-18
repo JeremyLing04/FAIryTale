@@ -1,7 +1,7 @@
-import { exec } from "child_process";
-import { promisify } from "util";
-import fs from "fs";
-import path from "path";
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const execAsync = promisify(exec);
 
@@ -13,7 +13,6 @@ export interface StoryGenerationRequest {
   chapterNumber: number;
   previousChoice?: string;
   previousContent?: string;
-  characterImageUrl?: string;
   characterStats?: {
     courage?: number;
     kindness?: number;
@@ -54,16 +53,16 @@ export interface StoryChapterResponse {
   };
 }
 
-// Function to check if Ollama is available (local or remote)
-async function isOllamaAvailable(): Promise<boolean> {
+// Check if Ollama is available (local or remote)
+export async function isOllamaAvailable(): Promise<boolean> {
   // Check for remote Ollama endpoint first
   const remoteOllamaUrl = process.env.OLLAMA_HOST || process.env.REMOTE_OLLAMA_URL;
   if (remoteOllamaUrl) {
     try {
       const response = await fetch(`${remoteOllamaUrl}/api/tags`);
       return response.ok;
-    } catch (error) {
-      console.log('Remote Ollama not accessible:', error.message);
+    } catch (error: any) {
+      console.log('Remote Ollama not accessible:', error?.message || error);
     }
   }
   
@@ -78,40 +77,28 @@ async function isOllamaAvailable(): Promise<boolean> {
 
 // Fallback story generation when Ollama is not available
 function generateFallbackStory(request: StoryGenerationRequest): StoryChapterResponse {
-  const { characterName, characterType, personality, genre, chapterNumber } = request;
-  const shouldIncludeChoices = chapterNumber % 3 === 0 || chapterNumber === 1;
+  const { characterName, characterType, genre, chapterNumber, personality } = request;
   
-  const stories = {
-    1: `Chapter ${chapterNumber}: Welcome to the beginning of ${characterName}'s amazing ${genre} adventure! 
-
-${characterName} the ${personality} ${characterType} stood at the edge of a magical forest, their heart filled with excitement. The trees whispered ancient secrets, and colorful butterflies danced through beams of golden sunlight.
-
-As ${characterName} took their first steps into this enchanted world, they discovered a sparkling stream that seemed to glow with magical energy. The water sang a gentle melody that made them feel brave and curious about what lay ahead.
-
-"This is going to be the most wonderful adventure ever!" ${characterName} thought, feeling ready to explore all the mysteries this magical place had to offer.`,
-    
-    2: `Chapter ${chapterNumber}: ${characterName} continues deeper into the magical realm, where every step brings new wonders.
-
-Walking along the enchanted path, ${characterName} discovered a grove where flowers changed colors with each step. Red roses turned to golden sunflowers, then to purple lavender that filled the air with sweet perfume.
-
-In the center of the grove stood a wise old tree with a face carved in its bark. "Welcome, young ${characterType}," the tree said with a voice like rustling leaves. "I am the Guardian of Stories, and I have been waiting for someone like you."
-
-The tree's branches swayed gently, revealing a hidden doorway glowing with soft, rainbow light. ${characterName} felt a mix of wonder and curiosity about what magical secrets lay beyond.`,
-    
-    default: `Chapter ${chapterNumber}: ${characterName}'s ${genre} adventure takes an exciting turn!
-
-With their ${personality} spirit shining bright, ${characterName} the ${characterType} faced the challenges ahead with courage and determination. Each step of the journey taught them something new about friendship, bravery, and the magic that exists in believing in yourself.
-
-The world around them sparkled with possibilities, and ${characterName} knew that no matter what happened next, they were ready for any adventure that came their way. Their heart was full of hope and excitement for the chapters still to come.
-
-"Every day brings new magic when you're brave enough to look for it," ${characterName} whispered to themselves, smiling at the wonderful journey they were on.`
+  const storyTemplates = {
+    fantasy: [
+      `${characterName} the ${characterType} discovered a shimmering portal hidden behind ancient oak trees. With ${personality} determination, they stepped through into a magical realm filled with floating islands and crystal waterfalls.`,
+      `The magical realm welcomed ${characterName} with whispers of ancient magic. Their ${personality} nature helped them befriend a wise talking fox who offered to guide them to the Crystal of Courage.`,
+      `${characterName} and their fox companion reached the Crystal Cave. The ${personality} ${characterType} felt the crystal's warm glow, knowing this was the key to saving their village from the endless winter.`
+    ],
+    adventure: [
+      `${characterName} the ${characterType} set sail on the merchant ship "Starlight." With their ${personality} spirit, they quickly became friends with the crew as they headed toward the mysterious Treasure Island.`,
+      `A storm hit the Starlight, but ${characterName}'s ${personality} courage helped rally the crew. Together they spotted a hidden cove where they could shelter and discovered an old treasure map.`,
+      `Following the treasure map, ${characterName} led the crew through a jungle filled with colorful parrots and friendly monkeys. Their ${personality} nature helped them solve the riddles protecting the treasure.`
+    ],
+    mystery: [
+      `Detective ${characterName} the ${characterType} arrived at the old library where books had been mysteriously disappearing. With their ${personality} approach, they began searching for clues among the dusty shelves.`,
+      `${characterName} discovered a secret passage behind the history section. Their ${personality} nature helped them bravely explore the hidden room filled with glowing, floating books.`,
+      `In the secret room, ${characterName} met the Library Guardian, a gentle spirit who had been protecting the magical books. With their ${personality} heart, they helped solve the mystery of the disappearing books.`
+    ]
   };
-
-  const content = stories[chapterNumber as keyof typeof stories] || stories.default;
   
-  if (!shouldIncludeChoices) {
-    return { content };
-  }
+  const templates = storyTemplates[genre as keyof typeof storyTemplates] || storyTemplates.fantasy;
+  const content = templates[Math.min(chapterNumber - 1, templates.length - 1)];
 
   return {
     content,
@@ -139,21 +126,22 @@ The world around them sparkled with possibilities, and ${characterName} knew tha
 }
 
 export async function generateStoryChapter(request: StoryGenerationRequest): Promise<StoryChapterResponse> {
-  // Check if Ollama is available
-  const ollamaAvailable = await isOllamaAvailable();
-  
-  if (!ollamaAvailable) {
-    console.log('Ollama not available, using fallback story generation');
-    return generateFallbackStory(request);
-  }
+  try {
+    // Check if Ollama is available
+    const ollamaAvailable = await isOllamaAvailable();
+    
+    if (!ollamaAvailable) {
+      console.log('Ollama not available, using fallback story generation');
+      return generateFallbackStory(request);
+    }
 
-  // Only add choices every 2-3 chapters, not every chapter
-  const shouldIncludeChoices = request.chapterNumber % 3 === 0 || request.chapterNumber === 1;
-  
-  const statsText = request.characterStats ? 
-    `Character stats: Courage ${request.characterStats.courage}/100, Kindness ${request.characterStats.kindness}/100, Wisdom ${request.characterStats.wisdom}/100, Creativity ${request.characterStats.creativity}/100, Strength ${request.characterStats.strength}/100, Friendship ${request.characterStats.friendship}/100.` : '';
+    // Only add choices every 2-3 chapters, not every chapter
+    const shouldIncludeChoices = request.chapterNumber % 3 === 0 || request.chapterNumber === 1;
+    
+    const statsText = request.characterStats ? 
+      `Character stats: Courage ${request.characterStats.courage}/100, Kindness ${request.characterStats.kindness}/100, Wisdom ${request.characterStats.wisdom}/100, Creativity ${request.characterStats.creativity}/100, Strength ${request.characterStats.strength}/100, Friendship ${request.characterStats.friendship}/100.` : '';
 
-  const prompt = `You are a children's story writer creating engaging, age-appropriate stories for kids aged 6-12. 
+    const prompt = `You are a children's story writer creating engaging, age-appropriate stories for kids aged 6-12. 
 Create chapter ${request.chapterNumber} of a ${request.genre} story featuring ${request.characterName}, a ${request.characterType} with the personality: ${request.personality}.
 ${statsText}
 ${request.previousChoice ? `Previous choice made: ${request.previousChoice}` : ''}
@@ -193,7 +181,6 @@ Format your response as JSON with this structure:
   }` : ''}
 }`;
 
-  try {
     // Check for remote Ollama endpoint
     const remoteOllamaUrl = process.env.OLLAMA_HOST || process.env.REMOTE_OLLAMA_URL;
     
@@ -249,30 +236,30 @@ Format your response as JSON with this structure:
         const result = JSON.parse(jsonMatch[0]);
         return result as StoryChapterResponse;
       }
-    }
-    
-    // Fallback if JSON parsing fails
-    return {
-      content: stdout.trim() || "The adventure continues...",
-      ...(shouldIncludeChoices && {
-        choices: {
-          optionA: {
-            text: "Continue the adventure",
-            description: "Keep exploring"
-          },
-          optionB: {
-            text: "Try something different",
-            description: "Take a new path"
+      
+      // Fallback if JSON parsing fails
+      return {
+        content: stdout.trim() || "The adventure continues...",
+        ...(shouldIncludeChoices && {
+          choices: {
+            optionA: {
+              text: "Continue the adventure",
+              description: "Keep exploring"
+            },
+            optionB: {
+              text: "Try something different",
+              description: "Take a new path"
+            }
           }
-        }
-      })
-    };
-  } catch (error) {
+        })
+      };
+    }
+  } catch (error: any) {
     console.error('Error generating story with Ollama:', error);
     // Fallback response
     return {
       content: `Chapter ${request.chapterNumber}: ${request.characterName} the ${request.characterType} continues their ${request.genre} adventure. With their ${request.personality} personality, they face new challenges and discover amazing things along the way.`,
-      ...(shouldIncludeChoices && {
+      ...(request.chapterNumber % 3 === 0 && {
         choices: {
           optionA: {
             text: "Continue the adventure",
@@ -296,8 +283,8 @@ async function isPythonAvailable(): Promise<boolean> {
     try {
       const response = await fetch(`${remoteImageUrl}/health`);
       return response.ok;
-    } catch (error) {
-      console.log('Remote image service not accessible:', error.message);
+    } catch (error: any) {
+      console.log('Remote image service not accessible:', error?.message || error);
     }
   }
   
@@ -413,7 +400,7 @@ export async function generateStoryImage(description: string, characterImageUrl?
     console.log('Virtual environment detected:', venvExists);
     
     const { stdout, stderr } = await execAsync(command, { 
-      shell: true,
+      shell: process.platform === 'win32' ? 'cmd' : '/bin/bash',
       timeout: 60000 // 60 second timeout
     });
     
