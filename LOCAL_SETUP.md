@@ -31,17 +31,12 @@ setup_venv.bat
 
 ### 2. Database Setup
 
-**Option A: Firebase (Recommended for Local Development)**
-1. Quick setup, no local database required
-2. Real-time data synchronization
-3. See `firebase-setup.md` for detailed instructions
-
-**Option B: Use Neon Database (Cloud PostgreSQL)**
+**Option A: Use Neon Database (Recommended)**
 1. Sign up at [neon.tech](https://neon.tech)
 2. Create a new database
 3. Copy the connection string
 
-**Option C: Local PostgreSQL**
+**Option B: Local PostgreSQL**
 1. Install PostgreSQL locally
 2. Create a database named `storymagic`
 3. Note your connection details
