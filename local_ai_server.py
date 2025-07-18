@@ -57,7 +57,8 @@ def generate_image():
         
         # Create story prompt optimized for your app
         # Your app.py expects comma-separated story segments, so we'll create one segment
-        story_prompt = description
+        # Also avoid Unicode characters to prevent Windows encoding issues
+        story_prompt = description.encode('ascii', 'ignore').decode('ascii')
         
         # Generate unique timestamp
         timestamp = int(time.time())
