@@ -323,11 +323,19 @@ export async function generateStoryImage(description: string, characterImageUrl?
     try {
       console.log('Using remote image generation service at:', remoteImageUrl);
       
+      // Limit description length to avoid 413 Request Entity Too Large errors
+      const maxDescriptionLength = 500;
+      let limitedDescription = description;
+      if (description.length > maxDescriptionLength) {
+        limitedDescription = description.substring(0, maxDescriptionLength) + "...";
+      }
+      
       const formData = new FormData();
-      formData.append('description', description);
+      formData.append('description', limitedDescription);
       formData.append('genre', genre);
       if (characterName) formData.append('character_name', characterName);
-      if (characterImageUrl) formData.append('character_image_url', characterImageUrl);
+      // Skip character image URL to avoid 413 errors for now
+      // if (characterImageUrl) formData.append('character_image_url', characterImageUrl);
       
       const response = await fetch(`${remoteImageUrl}/generate`, {
         method: 'POST',
@@ -352,99 +360,4 @@ export async function generateStoryImage(description: string, characterImageUrl?
   // If remote image generation failed, return empty string instead of trying local
   console.log('Remote image generation not available, skipping image generation');
   return "";
-  
-  if (!pythonAvailable) {
-    console.log('Python not available locally, skipping image generation');
-    // Return the character image if available, or empty string
-    return characterImageUrl || "";
-  }
-
-  try {
-    // Ensure the generated_images directory exists
-    const imagesDir = path.join(process.cwd(), 'generated_images');
-    if (!fs.existsSync(imagesDir)) {
-      fs.mkdirSync(imagesDir, { recursive: true });
-    }
-    
-    const timestamp = Date.now();
-    const outputPath = path.join(imagesDir, `story_${timestamp}.png`);
-    
-    // Check if venv exists and build appropriate command
-    // First check for custom venv path in environment variable
-    const customVenvPath = process.env.PYTHON_VENV_PATH;
-    const localVenvPath = path.join(process.cwd(), 'venv');
-    
-    let venvPath = localVenvPath;
-    let venvExists = fs.existsSync(localVenvPath);
-    
-    // If custom venv path is provided, use it instead
-    if (customVenvPath && fs.existsSync(customVenvPath)) {
-      venvPath = customVenvPath;
-      venvExists = true;
-    }
-    
-    // Build the command for Python image generator with optional venv activation
-    let command;
-    if (venvExists) {
-      // Use venv if it exists
-      const activateScript = process.platform === 'win32' 
-        ? path.join(venvPath, 'Scripts', 'activate.bat')
-        : path.join(venvPath, 'bin', 'activate');
-      
-      if (process.platform === 'win32') {
-        command = `"${activateScript}" && python app.py --genre ${genre} --description "${description}" --output "${outputPath}"`;
-      } else {
-        command = `source "${activateScript}" && python app.py --genre ${genre} --description "${description}" --output "${outputPath}"`;
-      }
-    } else {
-      // Use system python if no venv
-      command = `python app.py --genre ${genre} --description "${description}" --output "${outputPath}"`;
-    }
-    
-    // Add character image if provided
-    if (characterImageUrl && characterImageUrl.startsWith('data:')) {
-      // Save base64 image to temporary file
-      const tempImagePath = path.join(imagesDir, `temp_${timestamp}.png`);
-      const base64Data = characterImageUrl.replace(/^data:image\/\w+;base64,/, '');
-      fs.writeFileSync(tempImagePath, base64Data, 'base64');
-      command += ` --input-image "${tempImagePath}"`;
-    } else if (characterImageUrl) {
-      command += ` --input-image "${characterImageUrl}"`;
-    }
-    
-    console.log('Running image generation command:', command);
-    console.log('Virtual environment detected:', venvExists);
-    
-    const { stdout, stderr } = await execAsync(command, { 
-      shell: process.platform === 'win32' ? 'cmd' : '/bin/bash',
-      timeout: 60000 // 60 second timeout
-    });
-    
-    if (stderr) {
-      console.error('Image generation stderr:', stderr);
-    }
-    
-    if (stdout) {
-      console.log('Image generation stdout:', stdout);
-    }
-    
-    // Check if the output file was created
-    if (fs.existsSync(outputPath)) {
-      // Clean up temporary files
-      if (characterImageUrl && characterImageUrl.startsWith('data:')) {
-        const tempImagePath = path.join(imagesDir, `temp_${timestamp}.png`);
-        if (fs.existsSync(tempImagePath)) {
-          fs.unlinkSync(tempImagePath);
-        }
-      }
-      return `/generated_images/story_${timestamp}.png`;
-    } else {
-      console.error('Generated image file not found:', outputPath);
-      return characterImageUrl || "";
-    }
-  } catch (error) {
-    console.error('Error generating image:', error);
-    // Return a placeholder or the character image if available
-    return characterImageUrl || "";
-  }
 }

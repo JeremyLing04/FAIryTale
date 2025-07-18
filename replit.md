@@ -131,8 +131,10 @@ The image generator supports both system Python and virtual environments:
 - **July 18, 2025**: ✅ Successfully integrated remote AI services via ngrok tunnels
 - **July 18, 2025**: ✅ Remote Ollama+Mistral working perfectly for story generation
 - **July 18, 2025**: ✅ Remote SD15+IP-Adapter service working perfectly with Unicode fix applied
-- **July 18, 2025**: ✅ Added dotenv support for environment variable loading
+- **July 18, 2025**: ✅ Fixed "413 Request Entity Too Large" error by optimizing payload size
+- **July 18, 2025**: ✅ Updated ngrok tunnel endpoints (Ollama: eb5765ddb783, Image: 8aea4376e3b0)
 - **July 18, 2025**: ✅ Fixed TypeScript compilation errors in ollama.ts
+- **July 18, 2025**: ✅ Added dotenv support for environment variable loading
 - **January 18, 2025**: Added remote AI endpoints support - Replit deployment can use local PC's Ollama+Mistral and Stable Diffusion
 - **January 18, 2025**: Created comprehensive deployment guide for hybrid Replit+local AI setup
 - **January 18, 2025**: Added fallback story generation - app works without Ollama/AI dependencies
