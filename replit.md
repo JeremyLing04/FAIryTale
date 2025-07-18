@@ -127,6 +127,10 @@ The image generator supports both system Python and virtual environments:
 - The system automatically detects and uses the venv when available
 
 ### Recent Changes
+- **January 18, 2025**: Added hybrid deployment support - deploy on Replit while using local AI resources
+- **January 18, 2025**: Created local AI server script for remote AI processing
+- **January 18, 2025**: Added remote AI integration to story and image generation services
+- **January 18, 2025**: Updated project branding to "FAIryTale" with red "A" and "I" styling
 - **January 18, 2025**: Added fallback story generation - app works without Ollama/AI dependencies
 - **January 18, 2025**: Added fallback image handling - app works without Python/Stable Diffusion
 - **January 18, 2025**: Fixed Windows compatibility issues with socket binding and production builds

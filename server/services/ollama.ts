@@ -5,6 +5,10 @@ import path from "path";
 
 const execAsync = promisify(exec);
 
+// Remote AI server configuration
+const AI_SERVER_URL = process.env.LOCAL_AI_SERVER_URL;
+const AI_MODE = process.env.AI_MODE || 'local';
+
 export interface StoryGenerationRequest {
   characterName: string;
   characterType: string;
@@ -127,7 +131,30 @@ The world around them sparkled with possibilities, and ${characterName} knew tha
 }
 
 export async function generateStoryChapter(request: StoryGenerationRequest): Promise<StoryChapterResponse> {
-  // Check if Ollama is available
+  // Try remote AI server first if configured
+  if (AI_MODE === 'remote' && AI_SERVER_URL) {
+    try {
+      console.log('Attempting remote AI story generation...');
+      const response = await fetch(`${AI_SERVER_URL}/generate-story`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(request),
+        timeout: 30000 // 30 second timeout
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Remote AI story generation successful');
+        return result;
+      } else {
+        console.log('Remote AI server returned error:', response.status);
+      }
+    } catch (error) {
+      console.error('Remote AI server connection failed:', error);
+    }
+  }
+
+  // Check if Ollama is available locally
   const ollamaAvailable = await isOllamaAvailable();
   
   if (!ollamaAvailable) {
@@ -245,7 +272,37 @@ async function isPythonAvailable(): Promise<boolean> {
 }
 
 export async function generateStoryImage(description: string, characterImageUrl?: string, genre: string = "cartoon"): Promise<string> {
-  // Check if Python is available
+  // Try remote AI server first if configured
+  if (AI_MODE === 'remote' && AI_SERVER_URL) {
+    try {
+      console.log('Attempting remote AI image generation...');
+      const response = await fetch(`${AI_SERVER_URL}/generate-image`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description,
+          characterImage: characterImageUrl,
+          genre,
+          timestamp: Date.now()
+        }),
+        timeout: 120000 // 2 minute timeout for image generation
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.image) {
+          console.log('Remote AI image generation successful');
+          return result.image;
+        }
+      } else {
+        console.log('Remote AI image server returned error:', response.status);
+      }
+    } catch (error) {
+      console.error('Remote AI image server connection failed:', error);
+    }
+  }
+
+  // Check if Python is available locally
   const pythonAvailable = await isPythonAvailable();
   
   if (!pythonAvailable) {
