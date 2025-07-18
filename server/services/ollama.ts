@@ -209,50 +209,54 @@ Format your response as JSON with this structure:
 }`;
 
   try {
-    // Use Ollama with Mistral model
-    const { stdout } = await execAsync(`ollama run mistral "${prompt.replace(/"/g, '\\"')}"`);
+    // Use Ollama with Mistral model - properly escape the prompt
+    const escapedPrompt = prompt.replace(/"/g, '\\"').replace(/\$/g, '\\$');
+    const command = process.platform === 'win32' 
+      ? `ollama run mistral "${escapedPrompt}"`
+      : `ollama run mistral '${prompt.replace(/'/g, "'\\''")}''`;
+    
+    console.log('Running Ollama command for story generation...');
+    const { stdout, stderr } = await execAsync(command, { timeout: 60000 });
+    
+    if (stderr) {
+      console.log('Ollama stderr (may be normal):', stderr);
+    }
     
     // Try to parse the JSON response
     const jsonMatch = stdout.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
-      const result = JSON.parse(jsonMatch[0]);
-      return result as StoryChapterResponse;
+      try {
+        const result = JSON.parse(jsonMatch[0]);
+        console.log('Successfully parsed Ollama JSON response');
+        return result as StoryChapterResponse;
+      } catch (parseError) {
+        console.log('Failed to parse Ollama JSON, using text output');
+      }
     }
     
-    // Fallback if JSON parsing fails
+    // If no JSON found, create a structured response from the text
+    const content = stdout.trim() || "The adventure continues...";
     return {
-      content: stdout.trim() || "The adventure continues...",
+      content,
       ...(shouldIncludeChoices && {
         choices: {
           optionA: {
             text: "Continue the adventure",
-            description: "Keep exploring"
+            description: "Keep exploring with courage",
+            statChanges: { courage: 5, wisdom: 2 }
           },
           optionB: {
-            text: "Try something different",
-            description: "Take a new path"
+            text: "Help someone in need",
+            description: "Stop to assist others",
+            statChanges: { kindness: 5, friendship: 3 }
           }
         }
       })
     };
   } catch (error) {
     console.error('Error generating story with Ollama:', error);
-    // Fallback response
-    return {
-      content: `Chapter ${request.chapterNumber}: ${request.characterName} the ${request.characterType} continues their ${request.genre} adventure. With their ${request.personality} personality, they face new challenges and discover amazing things along the way.`,
-      ...(shouldIncludeChoices && {
-        choices: {
-          optionA: {
-            text: "Continue the adventure",
-            description: "Keep exploring"
-          },
-          optionB: {
-            text: "Try something different",
-            description: "Take a new path"
-          }
-        }
-      })
-    };
+    // Use the fallback function
+    return generateFallbackStory(request);
   }
 }
 
@@ -335,8 +339,19 @@ export async function generateStoryImage(description: string, characterImageUrl?
       venvExists = true;
     }
     
-    // Build the command for Python image generator with optional venv activation
+    // Create output directory for app.py (it expects specific structure)
+    const outputDir = path.join(imagesDir, 'story_images');
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+    
+    // Build character description for the story
+    const characterDesc = `a ${genre} style character in an animated art style, cinematic lighting`;
+    
+    // Build the command for your Stable Diffusion v1.5 + IP-Adapter script
     let command;
+    const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+    
     if (venvExists) {
       // Use venv if it exists
       const activateScript = process.platform === 'win32' 
@@ -344,24 +359,37 @@ export async function generateStoryImage(description: string, characterImageUrl?
         : path.join(venvPath, 'bin', 'activate');
       
       if (process.platform === 'win32') {
-        command = `"${activateScript}" && python app.py --genre ${genre} --description "${description}" --output "${outputPath}"`;
+        command = `"${activateScript}" && ${pythonCmd} app.py --character "${characterDesc}" --story "${description}" --output_dir "${outputDir}" --seed ${timestamp % 9999} --steps 25 --scale 7.5`;
       } else {
-        command = `source "${activateScript}" && python app.py --genre ${genre} --description "${description}" --output "${outputPath}"`;
+        command = `source "${activateScript}" && ${pythonCmd} app.py --character "${characterDesc}" --story "${description}" --output_dir "${outputDir}" --seed ${timestamp % 9999} --steps 25 --scale 7.5`;
       }
     } else {
       // Use system python if no venv
-      command = `python app.py --genre ${genre} --description "${description}" --output "${outputPath}"`;
+      command = `${pythonCmd} app.py --character "${characterDesc}" --story "${description}" --output_dir "${outputDir}" --seed ${timestamp % 9999} --steps 25 --scale 7.5`;
     }
     
-    // Add character image if provided
+    // Add character reference image if provided (IP-Adapter)
     if (characterImageUrl && characterImageUrl.startsWith('data:')) {
-      // Save base64 image to temporary file
-      const tempImagePath = path.join(imagesDir, `temp_${timestamp}.png`);
+      // Save base64 image to temporary file for IP-Adapter reference
+      const tempImagePath = path.join(imagesDir, `reference_${timestamp}.png`);
       const base64Data = characterImageUrl.replace(/^data:image\/\w+;base64,/, '');
       fs.writeFileSync(tempImagePath, base64Data, 'base64');
-      command += ` --input-image "${tempImagePath}"`;
-    } else if (characterImageUrl) {
-      command += ` --input-image "${characterImageUrl}"`;
+      command += ` --reference "${tempImagePath}"`;
+    } else if (characterImageUrl && !characterImageUrl.startsWith('http')) {
+      // Local file path
+      command += ` --reference "${characterImageUrl}"`;
+    }
+    
+    // Add LoRA style if genre-specific styles are available
+    const styleMap: Record<string, string> = {
+      'fantasy': 'anime_style.safetensors',
+      'adventure': 'anime_style.safetensors', 
+      'mystery': 'anime_style.safetensors',
+      'scifi': 'anime_style.safetensors'
+    };
+    
+    if (styleMap[genre.toLowerCase()]) {
+      command += ` --style_lora "${styleMap[genre.toLowerCase()]}"`;
     }
     
     console.log('Running image generation command:', command);
@@ -369,7 +397,7 @@ export async function generateStoryImage(description: string, characterImageUrl?
     
     const { stdout, stderr } = await execAsync(command, { 
       shell: true,
-      timeout: 60000 // 60 second timeout
+      timeout: 120000 // 2 minute timeout for SD generation
     });
     
     if (stderr) {
@@ -380,18 +408,38 @@ export async function generateStoryImage(description: string, characterImageUrl?
       console.log('Image generation stdout:', stdout);
     }
     
-    // Check if the output file was created
-    if (fs.existsSync(outputPath)) {
+    // Your app.py generates images in the output_dir with sequential names (00.png, 01.png, etc.)
+    // Find the most recently created image
+    const generatedImagePath = path.join(outputDir, '00.png'); // First image from story sequence
+    
+    if (fs.existsSync(generatedImagePath)) {
+      // Copy the generated image to our expected location
+      const finalPath = path.join(imagesDir, `story_${timestamp}.png`);
+      fs.copyFileSync(generatedImagePath, finalPath);
+      
       // Clean up temporary files
       if (characterImageUrl && characterImageUrl.startsWith('data:')) {
-        const tempImagePath = path.join(imagesDir, `temp_${timestamp}.png`);
+        const tempImagePath = path.join(imagesDir, `reference_${timestamp}.png`);
         if (fs.existsSync(tempImagePath)) {
           fs.unlinkSync(tempImagePath);
         }
       }
+      
+      // Clean up generated story images (optional - comment out if you want to keep them)
+      try {
+        const files = fs.readdirSync(outputDir);
+        files.forEach(file => {
+          if (file.endsWith('.png')) {
+            fs.unlinkSync(path.join(outputDir, file));
+          }
+        });
+      } catch (cleanupError) {
+        console.log('Cleanup warning:', cleanupError);
+      }
+      
       return `/generated_images/story_${timestamp}.png`;
     } else {
-      console.error('Generated image file not found:', outputPath);
+      console.error('Generated image file not found:', generatedImagePath);
       return characterImageUrl || "";
     }
   } catch (error) {

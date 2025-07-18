@@ -202,41 +202,71 @@ def generate_image():
         # Create temporary output path
         output_path = os.path.join(TEMP_DIR, f'story_{timestamp}.png')
         
-        # Build command
+        # Create output directory for your SD v1.5 + IP-Adapter script
+        output_dir = os.path.join(TEMP_DIR, f'story_images_{timestamp}')
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Build character description
+        character_desc = f"a {genre} style character in an animated art style, cinematic lighting"
+        
+        # Build command for your app.py script
         cmd = [
             'python', 'app.py',
-            '--genre', genre,
-            '--description', description,
-            '--output', output_path
+            '--character', character_desc,
+            '--story', description,
+            '--output_dir', output_dir,
+            '--seed', str(timestamp % 9999),
+            '--steps', '25',
+            '--scale', '7.5'
         ]
         
-        # Handle character image
+        # Handle character reference image for IP-Adapter
         char_img_path = None
         if character_image and character_image.startswith('data:'):
-            char_img_path = os.path.join(TEMP_DIR, f'char_{timestamp}.png')
+            char_img_path = os.path.join(TEMP_DIR, f'reference_{timestamp}.png')
             # Decode base64 image
             img_data = base64.b64decode(character_image.split(',')[1])
             with open(char_img_path, 'wb') as f:
                 f.write(img_data)
-            cmd.extend(['--input-image', char_img_path])
+            cmd.extend(['--reference', char_img_path])
+        
+        # Add style LoRA based on genre
+        style_map = {
+            'fantasy': 'anime_style.safetensors',
+            'adventure': 'anime_style.safetensors',
+            'mystery': 'anime_style.safetensors',
+            'scifi': 'anime_style.safetensors'
+        }
+        
+        if genre.lower() in style_map:
+            cmd.extend(['--style_lora', style_map[genre.lower()]])
         
         logger.info(f"Running image generation: {' '.join(cmd)}")
         
         # Run image generation
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
         
-        if result.returncode == 0 and os.path.exists(output_path):
+        # Your app.py generates images sequentially (00.png, 01.png, etc.)
+        generated_image_path = os.path.join(output_dir, '00.png')
+        
+        if result.returncode == 0 and os.path.exists(generated_image_path):
             # Read generated image
-            with open(output_path, 'rb') as f:
+            with open(generated_image_path, 'rb') as f:
                 img_data = f.read()
             
             # Convert to base64
             img_b64 = base64.b64encode(img_data).decode()
             
-            # Cleanup
-            os.remove(output_path)
+            # Cleanup temporary files
             if char_img_path and os.path.exists(char_img_path):
                 os.remove(char_img_path)
+            
+            # Clean up generated story images directory
+            try:
+                import shutil
+                shutil.rmtree(output_dir)
+            except:
+                pass
             
             logger.info("Image generation successful")
             return jsonify({"image": f"data:image/png;base64,{img_b64}"})
