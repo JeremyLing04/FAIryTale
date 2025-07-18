@@ -161,8 +161,18 @@ export async function generateStoryImage(description: string, characterImageUrl?
     const outputPath = path.join(imagesDir, `story_${timestamp}.png`);
     
     // Check if venv exists and build appropriate command
-    const venvPath = path.join(process.cwd(), 'venv');
-    const venvExists = fs.existsSync(venvPath);
+    // First check for custom venv path in environment variable
+    const customVenvPath = process.env.PYTHON_VENV_PATH;
+    const localVenvPath = path.join(process.cwd(), 'venv');
+    
+    let venvPath = localVenvPath;
+    let venvExists = fs.existsSync(localVenvPath);
+    
+    // If custom venv path is provided, use it instead
+    if (customVenvPath && fs.existsSync(customVenvPath)) {
+      venvPath = customVenvPath;
+      venvExists = true;
+    }
     
     // Build the command for Python image generator with optional venv activation
     let command;

@@ -48,6 +48,18 @@ DATABASE_URL=postgresql://username:password@host:port/database
 NODE_ENV=development
 ```
 
+**Windows-specific paths:**
+If you're using a custom virtual environment path, add it to your `.env` file:
+```env
+DATABASE_URL=postgresql://username:password@host:port/database
+NODE_ENV=development
+PYTHON_VENV_PATH=C:\Users\Admin\Downloads\Story\fast_story_gen\venv
+```
+
+Example setup:
+- Virtual environment: `C:\Users\Admin\Downloads\Story\fast_story_gen\venv`
+- Project path: `C:\Users\Admin\Downloads\Story\StorySparkAI\`
+
 ### 4. Database Migration
 ```bash
 # Push the database schema
@@ -124,6 +136,7 @@ The StoryMagic application includes several components that may not be available
 - Install Python 3.8+ from python.org
 - On Windows, ensure Python is added to PATH during installation
 - Try `python3` instead of `python` on Linux/Mac
+- **Custom venv path**: If using a custom virtual environment (e.g., `C:\Users\Admin\Downloads\Story\fast_story_gen\venv`), the system will automatically detect and use it
 - **Workaround**: Stories work without images, manually add images later
 
 **Database connection errors**
@@ -166,6 +179,9 @@ npm run build
 
 # Type checking
 npm run type-check
+
+# Windows-specific setup
+setup_windows.bat        # Automated Windows setup script
 ```
 
 ## Environment Variables
@@ -174,6 +190,7 @@ npm run type-check
 |----------|----------|-------------|
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `NODE_ENV` | No | Environment (development/production) |
+| `PYTHON_VENV_PATH` | No | Custom Python virtual environment path |
 | `OPENAI_API_KEY` | No | Optional for fallback AI generation |
 
 ## Dependencies Overview
