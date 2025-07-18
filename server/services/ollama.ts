@@ -339,15 +339,19 @@ export async function generateStoryImage(description: string, characterImageUrl?
         console.log('Remote image generation response:', result);
         return result.image_path || result.image_url || "";
       } else {
-        console.error('Remote image generation failed:', response.status, await response.text());
+        const errorText = await response.text();
+        console.error('Remote image generation failed:', response.status, errorText);
+        // If remote fails, still try to return something useful
+        return "";
       }
     } catch (error) {
       console.error('Error with remote image generation:', error);
     }
   }
   
-  // Check if local Python is available
-  const pythonAvailable = await isPythonAvailable();
+  // If remote image generation failed, return empty string instead of trying local
+  console.log('Remote image generation not available, skipping image generation');
+  return "";
   
   if (!pythonAvailable) {
     console.log('Python not available locally, skipping image generation');

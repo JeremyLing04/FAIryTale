@@ -60,6 +60,10 @@ def generate_image():
         # Also avoid Unicode characters to prevent Windows encoding issues
         story_prompt = description.encode('ascii', 'ignore').decode('ascii')
         
+        # Clean up the prompt to avoid special characters that cause encoding issues
+        import re
+        story_prompt = re.sub(r'[^\x00-\x7F]+', ' ', story_prompt)
+        
         # Generate unique timestamp
         timestamp = int(time.time())
         

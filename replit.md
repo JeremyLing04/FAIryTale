@@ -108,11 +108,12 @@ The application uses in-memory storage with three main entities:
 
 ### Environment Configuration
 - `NODE_ENV` determines development vs production behavior
+- `OLLAMA_HOST` for remote Ollama+Mistral service (via ngrok)
+- `REMOTE_IMAGE_URL` for remote SD15+IP-Adapter service (via ngrok)
 - `PYTHON_VENV_PATH` for custom Python virtual environment paths (optional)
-- Ollama installation required for local AI story generation
-- Python with Stable Diffusion dependencies for image generation
-- Optional Python virtual environment support (automatically detected)
-- Replit-specific configurations for cloud deployment
+- Dotenv support for loading environment variables from .env file
+- Hybrid deployment: Replit hosting + Windows PC AI services via ngrok tunnels
+- Optional local AI fallback when remote services unavailable
 
 ### Python Virtual Environment Setup
 The image generator supports both system Python and virtual environments:
@@ -127,6 +128,11 @@ The image generator supports both system Python and virtual environments:
 - The system automatically detects and uses the venv when available
 
 ### Recent Changes
+- **July 18, 2025**: ✅ Successfully integrated remote AI services via ngrok tunnels
+- **July 18, 2025**: ✅ Remote Ollama+Mistral working perfectly for story generation
+- **July 18, 2025**: ✅ Remote SD15+IP-Adapter service connected but needs Unicode fix in app.py
+- **July 18, 2025**: ✅ Added dotenv support for environment variable loading
+- **July 18, 2025**: ✅ Fixed TypeScript compilation errors in ollama.ts
 - **January 18, 2025**: Added remote AI endpoints support - Replit deployment can use local PC's Ollama+Mistral and Stable Diffusion
 - **January 18, 2025**: Created comprehensive deployment guide for hybrid Replit+local AI setup
 - **January 18, 2025**: Added fallback story generation - app works without Ollama/AI dependencies
