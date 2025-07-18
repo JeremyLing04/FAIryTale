@@ -57,12 +57,21 @@ export interface StoryChapterResponse {
 export async function isOllamaAvailable(): Promise<boolean> {
   // Check for remote Ollama endpoint first
   const remoteOllamaUrl = process.env.OLLAMA_HOST || process.env.REMOTE_OLLAMA_URL;
+  console.log('Environment check - OLLAMA_HOST:', process.env.OLLAMA_HOST);
+  console.log('Environment check - remoteOllamaUrl:', remoteOllamaUrl);
   if (remoteOllamaUrl) {
     try {
-      const response = await fetch(`${remoteOllamaUrl}/api/tags`);
+      console.log('Testing remote Ollama connection to:', remoteOllamaUrl);
+      const response = await fetch(`${remoteOllamaUrl}/api/tags`, {
+        headers: {
+          'ngrok-skip-browser-warning': 'true'
+        }
+      });
+      console.log('Remote Ollama response status:', response.status);
       return response.ok;
     } catch (error: any) {
       console.log('Remote Ollama not accessible:', error?.message || error);
+      console.log('Error details:', error);
     }
   }
   
@@ -190,6 +199,7 @@ Format your response as JSON with this structure:
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
         },
         body: JSON.stringify({
           model: 'mistral',
@@ -311,17 +321,13 @@ export async function generateStoryImage(description: string, characterImageUrl?
   
   if (remoteImageUrl) {
     try {
+      console.log('Using remote image generation service at:', remoteImageUrl);
+      
       const formData = new FormData();
       formData.append('description', description);
       formData.append('genre', genre);
-      
-      // Use provided character name or default to 'hero'
-      const charName = characterName || 'hero';
-      formData.append('character_name', charName);
-      
-      if (characterImageUrl) {
-        formData.append('character_image', characterImageUrl);
-      }
+      if (characterName) formData.append('character_name', characterName);
+      if (characterImageUrl) formData.append('character_image_url', characterImageUrl);
       
       const response = await fetch(`${remoteImageUrl}/generate`, {
         method: 'POST',
@@ -330,7 +336,10 @@ export async function generateStoryImage(description: string, characterImageUrl?
       
       if (response.ok) {
         const result = await response.json();
-        return result.image_url || "";
+        console.log('Remote image generation response:', result);
+        return result.image_path || result.image_url || "";
+      } else {
+        console.error('Remote image generation failed:', response.status, await response.text());
       }
     } catch (error) {
       console.error('Error with remote image generation:', error);
