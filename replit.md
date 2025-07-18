@@ -127,15 +127,6 @@ The image generator supports both system Python and virtual environments:
 - The system automatically detects and uses the venv when available
 
 ### Recent Changes
-- **January 18, 2025**: Updated AI integration for user's specific setup - Mistral + SD v1.5 + IP-Adapter
-- **January 18, 2025**: Enhanced ollama.ts with proper command escaping and timeout handling
-- **January 18, 2025**: Modified image generation to work with user's app.py script parameters
-- **January 18, 2025**: Added automatic IP-Adapter support when character images are uploaded
-- **January 18, 2025**: Implemented genre-based LoRA style selection for image generation
-- **January 18, 2025**: Added hybrid deployment support - deploy on Replit while using local AI resources
-- **January 18, 2025**: Created local AI server script for remote AI processing
-- **January 18, 2025**: Added remote AI integration to story and image generation services
-- **January 18, 2025**: Updated project branding to "FAIryTale" with red "A" and "I" styling
 - **January 18, 2025**: Added fallback story generation - app works without Ollama/AI dependencies
 - **January 18, 2025**: Added fallback image handling - app works without Python/Stable Diffusion
 - **January 18, 2025**: Fixed Windows compatibility issues with socket binding and production builds
