@@ -49,6 +49,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const story = insertStorySchema.parse(req.body);
       const newStory = await storage.createStory(story);
+      
+      // Get character details for first chapter generation
+      const character = await storage.getCharacter(newStory.characterId);
+      if (character) {
+        try {
+          // Generate first chapter automatically
+          const firstChapter = await generateStoryChapter({
+            characterName: character.name,
+            characterType: character.type,
+            personality: character.personality,
+            genre: newStory.genre,
+            chapterNumber: 1,
+            characterImageUrl: character.imageUrl,
+            characterStats: {
+              courage: character.courage,
+              kindness: character.kindness,
+              wisdom: character.wisdom,
+              creativity: character.creativity,
+              strength: character.strength,
+              friendship: character.friendship,
+            },
+          });
+          
+          // Generate image for the first chapter
+          let imageUrl = null;
+          try {
+            imageUrl = await generateStoryImage(firstChapter.content, character.imageUrl, newStory.genre);
+          } catch (imageError) {
+            console.error('Failed to generate image for first chapter:', imageError);
+          }
+          
+          // Save first chapter
+          const chapterData = {
+            storyId: newStory.id,
+            chapterNumber: 1,
+            content: firstChapter.content,
+            choices: null, // First chapter typically doesn't have choices
+            hasChoices: false,
+            isGenerated: true,
+            imageUrl,
+          };
+          
+          await storage.createStoryChapter(chapterData);
+          console.log(`Generated first chapter for story ${newStory.id}`);
+        } catch (chapterError) {
+          console.error('Failed to generate first chapter:', chapterError);
+          // Story creation should still succeed even if chapter generation fails
+        }
+      }
+      
       res.json(newStory);
     } catch (error) {
       res.status(400).json({ message: "Invalid story data" });
