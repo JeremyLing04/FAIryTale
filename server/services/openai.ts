@@ -13,18 +13,43 @@ export interface StoryGenerationRequest {
   chapterNumber: number;
   previousChoice?: string;
   previousContent?: string;
+  characterImageUrl?: string;
+  characterStats?: {
+    courage?: number;
+    kindness?: number;
+    wisdom?: number;
+    creativity?: number;
+    strength?: number;
+    friendship?: number;
+  };
 }
 
 export interface StoryChapterResponse {
   content: string;
-  choices: {
+  choices?: {
     optionA: {
       text: string;
       description: string;
+      statChanges?: {
+        courage?: number;
+        kindness?: number;
+        wisdom?: number;
+        creativity?: number;
+        strength?: number;
+        friendship?: number;
+      };
     };
     optionB: {
       text: string;
       description: string;
+      statChanges?: {
+        courage?: number;
+        kindness?: number;
+        wisdom?: number;
+        creativity?: number;
+        strength?: number;
+        friendship?: number;
+      };
     };
   };
 }
