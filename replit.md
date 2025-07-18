@@ -132,7 +132,6 @@ The image generator supports both system Python and virtual environments:
 - **July 18, 2025**: ✅ Remote Ollama+Mistral working perfectly for story generation
 - **July 18, 2025**: ✅ Remote SD15+IP-Adapter service working perfectly with Unicode fix applied
 - **July 18, 2025**: ✅ Fixed "413 Request Entity Too Large" error by optimizing payload size
-- **July 18, 2025**: ✅ Scene description generation perfected - generates action/scene only (character name added by app.py)
 - **July 18, 2025**: ✅ Fixed 500 Internal Server Error by limiting description length to 200 characters
 - **July 18, 2025**: ✅ Updated ngrok tunnel endpoints (Ollama: eb5765ddb783, Image: 8260643e59cb)
 - **July 18, 2025**: ✅ Added character reference image support for IP-Adapter (uploaded images used as reference)

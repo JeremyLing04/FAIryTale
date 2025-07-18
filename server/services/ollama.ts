@@ -323,13 +323,20 @@ export async function generateStoryImage(description: string, characterImageUrl?
     try {
       console.log('Using remote image generation service at:', remoteImageUrl);
       
-      // Generate single scene description in format your app.py expects
-      // Your app.py splits by commas, so we need format: "{character}, doing something"
-      const sceneDescription = await generateSceneDescription(description, characterName || 'character', genre || 'fantasy');
-      console.log('Generated scene description:', sceneDescription);
+      // Limit description length to avoid server errors - your app.py splits by commas
+      const maxDescriptionLength = 200;
+      let limitedDescription = description;
+      if (description.length > maxDescriptionLength) {
+        // Extract key visual elements for image generation
+        const sentences = description.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        limitedDescription = sentences.slice(0, 2).join('. ').substring(0, maxDescriptionLength);
+      }
+      
+      // Clean up text for your Windows environment
+      limitedDescription = limitedDescription.replace(/[^\w\s,.-]/g, ' ').trim();
       
       const formData = new FormData();
-      formData.append('description', sceneDescription);
+      formData.append('description', limitedDescription);
       formData.append('genre', genre);
       if (characterName) formData.append('character_name', characterName);
       
@@ -389,64 +396,4 @@ export async function generateStoryImage(description: string, characterImageUrl?
   // If remote image generation failed, return empty string instead of trying local
   console.log('Remote image generation not available, skipping image generation');
   return "";
-}
-
-// Generate a single scene description in format: "{character}, doing something"
-async function generateSceneDescription(storyContent: string, characterName: string, genre: string): Promise<string> {
-  const remoteOllamaUrl = process.env.OLLAMA_HOST;
-  
-  if (remoteOllamaUrl) {
-    try {
-      console.log('Generating scene description with remote Ollama');
-      
-      const prompt = `Based on this story content, generate a single visual scene description showing what the character is doing.
-
-Story content: ${storyContent}
-
-Examples:
-- "flying over a village with golden scales gleaming"
-- "standing in a magical forest with glowing flowers"
-- "riding through a misty mountain pass"
-
-Generate ONE action/scene description that captures the main visual moment from the story. Keep it under 50 words and focus on the character's action and setting. Do NOT include the character name.
-
-Scene description:`;
-
-      const response = await fetch(`${remoteOllamaUrl}/api/generate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'mistral',
-          prompt: prompt,
-          stream: false,
-          options: {
-            temperature: 0.7,
-            max_tokens: 100,
-          },
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        let sceneDescription = data.response?.trim();
-        
-        // Clean up the scene description
-        sceneDescription = sceneDescription.replace(/['"]/g, '').trim();
-        
-        // Remove character name if it was included
-        if (sceneDescription.includes(`${characterName},`)) {
-          sceneDescription = sceneDescription.replace(`${characterName},`, '').trim();
-        }
-        
-        return sceneDescription || `in a ${genre} adventure`;
-      }
-    } catch (error) {
-      console.error('Error generating scene description:', error);
-    }
-  }
-  
-  // Fallback scene description
-  return `in a ${genre} adventure`;
 }
