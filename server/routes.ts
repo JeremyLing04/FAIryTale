@@ -115,6 +115,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get shared stories
+  app.get("/api/stories/shared", async (req, res) => {
+    try {
+      const sharedStories = await storage.getSharedStories();
+      res.json(sharedStories);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch shared stories" });
+    }
+  });
+
+  // Like a shared story
+  app.post("/api/stories/:id/like", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updatedStory = await storage.likeStory(id);
+      if (!updatedStory) {
+        return res.status(404).json({ message: "Story not found" });
+      }
+      res.json(updatedStory);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to like story" });
+    }
+  });
+
   app.get("/api/stories/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);

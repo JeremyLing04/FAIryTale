@@ -18,7 +18,9 @@ export interface IStorage {
   createStory(story: InsertStory): Promise<Story>;
   getStory(id: number): Promise<Story | undefined>;
   getAllStories(): Promise<Story[]>;
+  getSharedStories(): Promise<Story[]>;
   updateStory(id: number, updates: Partial<Story>): Promise<Story | undefined>;
+  likeStory(id: number): Promise<Story | undefined>;
   
   // Story chapter operations
   createStoryChapter(chapter: InsertStoryChapter): Promise<StoryChapter>;
@@ -79,11 +81,26 @@ export class MemStorage implements IStorage {
     return Array.from(this.stories.values());
   }
 
+  async getSharedStories(): Promise<Story[]> {
+    return Array.from(this.stories.values())
+      .filter(story => story.isShared && story.isCompleted)
+      .sort((a, b) => b.likes - a.likes); // Sort by likes (most liked first)
+  }
+
   async updateStory(id: number, updates: Partial<Story>): Promise<Story | undefined> {
     const story = this.stories.get(id);
     if (!story) return undefined;
     
     const updatedStory = { ...story, ...updates };
+    this.stories.set(id, updatedStory);
+    return updatedStory;
+  }
+
+  async likeStory(id: number): Promise<Story | undefined> {
+    const story = this.stories.get(id);
+    if (!story) return undefined;
+    
+    const updatedStory = { ...story, likes: story.likes + 1 };
     this.stories.set(id, updatedStory);
     return updatedStory;
   }

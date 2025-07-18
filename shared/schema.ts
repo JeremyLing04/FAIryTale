@@ -27,6 +27,9 @@ export interface Story {
   totalChapters: number;
   isCompleted: boolean;
   imageUrl?: string;
+  isShared: boolean; // whether the story is shared with other children
+  authorName?: string; // name of the child who created it
+  likes: number; // number of likes from other children
   createdAt: Date;
 }
 
@@ -90,6 +93,9 @@ export const insertStorySchema = z.object({
   totalChapters: z.number().default(5),
   isCompleted: z.boolean().default(false),
   imageUrl: z.string().optional(),
+  isShared: z.boolean().default(false),
+  authorName: z.string().optional(),
+  likes: z.number().default(0),
 });
 
 export const insertStoryChapterSchema = z.object({
