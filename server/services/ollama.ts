@@ -323,12 +323,17 @@ export async function generateStoryImage(description: string, characterImageUrl?
     try {
       console.log('Using remote image generation service at:', remoteImageUrl);
       
-      // Limit description length to avoid 413 Request Entity Too Large errors
-      const maxDescriptionLength = 500;
+      // Limit description length to avoid server errors - your app.py splits by commas
+      const maxDescriptionLength = 200;
       let limitedDescription = description;
       if (description.length > maxDescriptionLength) {
-        limitedDescription = description.substring(0, maxDescriptionLength) + "...";
+        // Extract key visual elements for image generation
+        const sentences = description.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        limitedDescription = sentences.slice(0, 2).join('. ').substring(0, maxDescriptionLength);
       }
+      
+      // Clean up text for your Windows environment
+      limitedDescription = limitedDescription.replace(/[^\w\s,.-]/g, ' ').trim();
       
       const formData = new FormData();
       formData.append('description', limitedDescription);
