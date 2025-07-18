@@ -399,16 +399,16 @@ async function generateSceneDescription(storyContent: string, characterName: str
     try {
       console.log('Generating scene description with remote Ollama');
       
-      const prompt = `Based on this story content, generate a single visual scene description in this exact format: "${characterName}, [action/scene description]"
+      const prompt = `Based on this story content, generate a single visual scene description showing what the character is doing.
 
 Story content: ${storyContent}
 
 Examples:
-- "Moses, flying over a village with golden scales gleaming"
-- "Princess Luna, standing in a magical forest with glowing flowers"
-- "Brave Knight, riding through a misty mountain pass"
+- "flying over a village with golden scales gleaming"
+- "standing in a magical forest with glowing flowers"
+- "riding through a misty mountain pass"
 
-Generate ONE scene description that captures the main visual moment from the story. Keep it under 50 words and focus on the character's action and setting.
+Generate ONE action/scene description that captures the main visual moment from the story. Keep it under 50 words and focus on the character's action and setting. Do NOT include the character name.
 
 Scene description:`;
 
@@ -432,15 +432,15 @@ Scene description:`;
         const data = await response.json();
         let sceneDescription = data.response?.trim();
         
-        // Clean up and ensure proper format
-        if (sceneDescription && !sceneDescription.includes(`${characterName},`)) {
-          sceneDescription = `${characterName}, ${sceneDescription}`;
+        // Clean up the scene description
+        sceneDescription = sceneDescription.replace(/['"]/g, '').trim();
+        
+        // Remove character name if it was included
+        if (sceneDescription.includes(`${characterName},`)) {
+          sceneDescription = sceneDescription.replace(`${characterName},`, '').trim();
         }
         
-        // Remove quotes if present
-        sceneDescription = sceneDescription.replace(/['"]/g, '');
-        
-        return sceneDescription || `${characterName}, in a ${genre} adventure`;
+        return sceneDescription || `in a ${genre} adventure`;
       }
     } catch (error) {
       console.error('Error generating scene description:', error);
@@ -448,5 +448,5 @@ Scene description:`;
   }
   
   // Fallback scene description
-  return `${characterName}, in a ${genre} adventure`;
+  return `in a ${genre} adventure`;
 }
