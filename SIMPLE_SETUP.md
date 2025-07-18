@@ -1,4 +1,4 @@
-# StoryMagic - Simple Setup (No AI Required)
+# FAIryTale - Simple Setup (No AI Required)
 
 ## Quick Start - Just Get It Running!
 

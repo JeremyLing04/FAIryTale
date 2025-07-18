@@ -104,8 +104,11 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
-          <h1 className="fredoka text-5xl md:text-7xl text-white mb-6 animate-bounce-slow">
-            Create Your Magic Story!
+          <div className="mb-4">
+            <span className="fredoka text-4xl md:text-6xl text-white/80">Welcome to</span>
+          </div>
+          <h1 className="fredoka text-6xl md:text-8xl text-white mb-6 animate-bounce-slow">
+            F<span className="text-red-400">A</span><span className="text-red-400">I</span>ryTale
           </h1>
           <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed">
             Build amazing adventures with AI! Create your own characters and watch them come to life in personalized stories where YOU choose what happens next!

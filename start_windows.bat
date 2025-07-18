@@ -1,5 +1,5 @@
 @echo off
-echo Starting StoryMagic for Windows...
+echo Starting FAIryTale for Windows...
 
 :: Check if dist folder exists
 if not exist dist (

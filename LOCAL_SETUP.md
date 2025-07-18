@@ -1,4 +1,4 @@
-# StoryMagic - Local Development Setup
+# FAIryTale - Local Development Setup
 
 ## Prerequisites
 
