@@ -26,6 +26,8 @@ if not exist .env (
     echo NODE_ENV=development > .env
     echo # Add your custom Python virtual environment path if needed >> .env
     echo # PYTHON_VENV_PATH=C:\Users\Admin\Downloads\Story\fast_story_gen\venv >> .env
+    echo # Add your custom Python app.py path if needed >> .env
+    echo # PYTHON_APP_PATH=C:\Users\Admin\Downloads\Story\fast_story_gen\app.py >> .env
     echo.
     echo Optional: Edit the .env file to customize settings.
 )
