@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Optimized image server for your custom SD15+IP-Adapter setup
-Designed specifically for your Windows fast_story_gen directory
+Designed specifically for: C:\Users\Admin\Downloads\Story\fast_story_gen\app.py
 """
 
 from flask import Flask, request, jsonify, send_from_directory
@@ -17,10 +16,10 @@ import shutil
 app = Flask(__name__)
 CORS(app)
 
-# Configuration for your specific setup - using forward slashes to avoid escape issues
-VENV_PATH = "C:/Users/Admin/Downloads/Story/fast_story_gen/venv"
-APP_PY_PATH = "C:/Users/Admin/Downloads/Story/fast_story_gen/app.py"
-WORK_DIR = "C:/Users/Admin/Downloads/Story/fast_story_gen"
+# Configuration for your specific setup
+VENV_PATH = r"C:\Users\Admin\Downloads\Story\fast_story_gen\venv"
+APP_PY_PATH = r"C:\Users\Admin\Downloads\Story\fast_story_gen\app.py"
+WORK_DIR = r"C:\Users\Admin\Downloads\Story\fast_story_gen"
 
 # Ensure output directory exists
 OUTPUT_DIR = "outputs/story_images"

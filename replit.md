@@ -127,9 +127,6 @@ The image generator supports both system Python and virtual environments:
 - The system automatically detects and uses the venv when available
 
 ### Recent Changes
-- **January 18, 2025**: Fixed TypeScript compilation errors and Unicode issues in Python server
-- **January 18, 2025**: Created optimized local_ai_server.py for user's specific SD15+IP-Adapter setup
-- **January 18, 2025**: Added integration test scripts to verify setup before deployment
 - **January 18, 2025**: Added remote AI endpoints support - Replit deployment can use local PC's Ollama+Mistral and Stable Diffusion
 - **January 18, 2025**: Created comprehensive deployment guide for hybrid Replit+local AI setup
 - **January 18, 2025**: Added fallback story generation - app works without Ollama/AI dependencies
