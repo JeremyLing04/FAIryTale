@@ -4,12 +4,10 @@
 
 ### Required Software
 1. **Node.js 18+** - [Download from nodejs.org](https://nodejs.org/)
-2. **OpenAI API Key** - [Get from platform.openai.com](https://platform.openai.com/api-keys) *(for AI story and image generation)*
+2. **Ollama** - [Download from ollama.com](https://ollama.com/download) *(for story generation)*
+3. **Python 3.8+** - [Download from python.org](https://www.python.org/downloads/) *(for image generation)*
 
-**Note:** No database or local AI setup required! The application uses:
-- In-memory storage for simplified deployment
-- OpenAI GPT-4o for story generation  
-- DALL-E 3 for image generation
+**Note:** Database setup is not required! The application uses in-memory storage for simplified deployment.
 
 ## Quick Start
 
@@ -18,22 +16,31 @@
 # Install Node.js dependencies
 npm install
 
-# No additional AI setup required!
-# OpenAI handles both story generation and image creation
+# Install Ollama and pull Mistral model
+ollama pull mistral
+
+# Install Python dependencies (choose one option)
+# Option A: System Python
+pip install -r python_requirements.txt
+
+# Option B: Virtual Environment (Recommended)
+# Linux/Mac:
+bash setup_venv.sh
+# Windows:
+setup_venv.bat
 ```
 
-### 2. Environment Configuration
-Create a `.env` file with your OpenAI API key:
+### 2. Environment Configuration (Optional)
+Create a `.env` file only if you need custom settings:
 ```env
 NODE_ENV=development
-OPENAI_API_KEY=your_openai_api_key_here
+# Optional: Custom Python virtual environment path
+PYTHON_VENV_PATH=C:\Users\Admin\Downloads\Story\fast_story_gen\venv
 ```
 
-**Get your OpenAI API key:**
-1. Visit [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
-2. Sign up or log in to your OpenAI account
-3. Create a new API key
-4. Copy and paste it into your `.env` file
+**Example Windows setup:**
+- Virtual environment: `C:\Users\Admin\Downloads\Story\fast_story_gen\venv`
+- Project path: `C:\Users\Admin\Downloads\Story\StorySparkAI\`
 
 ### 3. Start Development Server
 ```bash
@@ -95,11 +102,18 @@ The StoryMagic application includes several components that may not be available
 
 ### Common Issues
 
-**"Missing OpenAI API key"**
-- Get your API key from [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
-- Add it to your `.env` file as `OPENAI_API_KEY=your_key_here`
-- Restart the application after adding the key
-- **Note**: You need OpenAI credits to generate stories and images
+**"ollama: not found"**
+- Install Ollama from ollama.com
+- Run `ollama pull mistral` to download the model
+- Ensure Ollama is in your system PATH
+- **Workaround**: Story creation still works, chapters just won't auto-generate
+
+**"python: not found"**
+- Install Python 3.8+ from python.org
+- On Windows, ensure Python is added to PATH during installation
+- Try `python3` instead of `python` on Linux/Mac
+- **Custom venv path**: If using a custom virtual environment (e.g., `C:\Users\Admin\Downloads\Story\fast_story_gen\venv`), the system will automatically detect and use it
+- **Workaround**: Stories work without images, manually add images later
 
 **Windows Socket Error (ENOTSUP)**
 - Use `start_windows.bat` instead of `npm start` for production on Windows
@@ -157,7 +171,8 @@ start_windows.bat        # Start production server on Windows
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `NODE_ENV` | No | Environment (development/production) |
-| `OPENAI_API_KEY` | **Yes** | OpenAI API key for story and image generation |
+| `PYTHON_VENV_PATH` | No | Custom Python virtual environment path |
+| `OPENAI_API_KEY` | No | Optional for fallback AI generation |
 
 ## Dependencies Overview
 

@@ -175,7 +175,9 @@ export async function generateStoryImage(description: string, characterImageUrl?
     }
     
     // Build the command for Python image generator with optional venv activation
+    // Using image_wrapper.py which interfaces with your app.py
     let command;
+    
     if (venvExists) {
       // Use venv if it exists
       const activateScript = process.platform === 'win32' 
@@ -183,13 +185,13 @@ export async function generateStoryImage(description: string, characterImageUrl?
         : path.join(venvPath, 'bin', 'activate');
       
       if (process.platform === 'win32') {
-        command = `"${activateScript}" && python app.py --genre ${genre} --description "${description}" --output "${outputPath}"`;
+        command = `"${activateScript}" && python image_wrapper.py --genre ${genre} --description "${description}" --output "${outputPath}"`;
       } else {
-        command = `source "${activateScript}" && python app.py --genre ${genre} --description "${description}" --output "${outputPath}"`;
+        command = `source "${activateScript}" && python image_wrapper.py --genre ${genre} --description "${description}" --output "${outputPath}"`;
       }
     } else {
       // Use system python if no venv
-      command = `python app.py --genre ${genre} --description "${description}" --output "${outputPath}"`;
+      command = `python image_wrapper.py --genre ${genre} --description "${description}" --output "${outputPath}"`;
     }
     
     // Add character image if provided
@@ -198,9 +200,9 @@ export async function generateStoryImage(description: string, characterImageUrl?
       const tempImagePath = path.join(imagesDir, `temp_${timestamp}.png`);
       const base64Data = characterImageUrl.replace(/^data:image\/\w+;base64,/, '');
       fs.writeFileSync(tempImagePath, base64Data, 'base64');
-      command += ` --input-image "${tempImagePath}"`;
+      command += ` --reference "${tempImagePath}"`;
     } else if (characterImageUrl) {
-      command += ` --input-image "${characterImageUrl}"`;
+      command += ` --reference "${characterImageUrl}"`;
     }
     
     console.log('Running image generation command:', command);
@@ -219,7 +221,7 @@ export async function generateStoryImage(description: string, characterImageUrl?
       console.log('Image generation stdout:', stdout);
     }
     
-    // Check if the output file was created
+    // Check if the output file was created by the wrapper
     if (fs.existsSync(outputPath)) {
       // Clean up temporary files
       if (characterImageUrl && characterImageUrl.startsWith('data:')) {

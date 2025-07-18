@@ -24,24 +24,43 @@ if %errorlevel% neq 0 (
 if not exist .env (
     echo Creating .env file...
     echo NODE_ENV=development > .env
-    echo OPENAI_API_KEY=your_openai_api_key_here >> .env
+    echo # Add your custom Python virtual environment path if needed >> .env
+    echo # PYTHON_VENV_PATH=C:\Users\Admin\Downloads\Story\fast_story_gen\venv >> .env
     echo.
-    echo IMPORTANT: Edit the .env file and add your OpenAI API key!
-    echo Get your key from: https://platform.openai.com/api-keys
+    echo Optional: Edit the .env file to customize settings.
 )
 
-:: Check for OpenAI API key
-if exist .env (
-    findstr "OPENAI_API_KEY=your_openai_api_key_here" .env >nul 2>&1
-    if %errorlevel% equ 0 (
-        echo WARNING: Please add your OpenAI API key to the .env file
-        echo Get your key from: https://platform.openai.com/api-keys
-        echo.
-    ) else (
-        echo OpenAI API key configured!
-    )
+:: Check if Ollama is installed
+where ollama >nul 2>&1
+if %errorlevel% neq 0 (
+    echo WARNING: Ollama is not installed or not in PATH
+    echo Story generation will not work without Ollama and the Mistral model
+    echo Install from: https://ollama.com/download
+    echo Then run: ollama pull mistral
+    echo.
 ) else (
-    echo No .env file found, will be created shortly...
+    echo Ollama found, checking for Mistral model...
+    ollama list | findstr mistral >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo Downloading Mistral model...
+        ollama pull mistral
+    )
+)
+
+:: Check if Python is installed
+where python >nul 2>&1
+if %errorlevel% neq 0 (
+    echo WARNING: Python is not installed or not in PATH
+    echo Image generation will not work without Python
+    echo Install from: https://www.python.org/downloads/
+    echo.
+) else (
+    echo Python found, checking for dependencies...
+    python -c "import torch, diffusers, PIL" 2>nul
+    if %errorlevel% neq 0 (
+        echo Installing Python dependencies...
+        pip install -r python_requirements.txt
+    )
 )
 
 :: Setup complete
@@ -56,9 +75,8 @@ echo Production mode:
 echo 1. Run: start_windows.bat
 echo 2. Open http://localhost:5000 in your browser
 echo.
-echo For OpenAI setup:
-echo - Get API key from: https://platform.openai.com/api-keys
-echo - Add it to .env file: OPENAI_API_KEY=your_key_here
-echo - Restart the application after adding the key
+echo For your specific setup:
+echo - Virtual environment: C:\Users\Admin\Downloads\Story\fast_story_gen\venv
+echo - Add PYTHON_VENV_PATH to .env if using custom virtual environment
 echo.
 pause
