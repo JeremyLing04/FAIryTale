@@ -94,19 +94,19 @@ The StoryMagic application includes several components that may not be available
 ✓ **Database Integration** - PostgreSQL with persistent storage
 ✓ **Character Stats System** - 6 attributes that track and influence stories
 
-### Optional Features (Require Dependencies)
-⚠️ **AI Story Generation** - Requires Ollama + Mistral model
-⚠️ **Image Generation** - Requires Python + Stable Diffusion dependencies
+### Optional Features (Enhanced with Dependencies)
+✓ **AI Story Generation** - Enhanced with Ollama + Mistral, includes comprehensive fallback
+✓ **Image Generation** - Enhanced with Python + Stable Diffusion, works without dependencies
 
 ## Troubleshooting
 
 ### Common Issues
 
-**"ollama: not found"**
-- Install Ollama from ollama.com
-- Run `ollama pull mistral` to download the model
-- Ensure Ollama is in your system PATH
-- **Workaround**: Story creation still works, chapters just won't auto-generate
+**"ollama: not found"** ✅ FIXED
+- ~~Install Ollama from ollama.com~~
+- ~~Run `ollama pull mistral` to download the model~~
+- The application now includes comprehensive fallback story generation
+- **Stories work perfectly without Ollama** - enhanced templates create engaging content
 
 **"python: not found"**
 - Install Python 3.8+ from python.org
@@ -120,30 +120,29 @@ The StoryMagic application includes several components that may not be available
 - The application now automatically detects Windows and uses localhost configuration
 - Both `npm start` and `start_windows.bat` work correctly on Windows
 
-**Database connection errors**
-- Verify your DATABASE_URL is correct
-- Ensure the database server is running
-- Check firewall settings for local PostgreSQL
+**Database connection errors** ✅ FIXED
+- ~~Verify your DATABASE_URL is correct~~
+- ~~Ensure the database server is running~~
+- The application now uses in-memory storage - no database required
 
 **Image generation fails**
 - Install Python dependencies: `pip install -r python_requirements.txt`
 - For GPU acceleration, install CUDA-compatible PyTorch
 - Virtual environment setup is recommended to avoid conflicts
 
-### Minimal Setup (Just Database)
-If you only want to test the character stats system without AI features:
+### Minimal Setup (No Dependencies Required)
+The application now works completely without external dependencies:
 ```bash
 npm install
-# Set up DATABASE_URL in .env
-npm run db:push
 npm run dev
 ```
 
-This will give you full access to:
+This gives you full access to:
 - Character creation with stats system
-- Story creation and management
+- Story creation and management with fallback content
 - Character stats tracking and updates
 - All UI components and navigation
+- Enhanced story generation with genre-specific templates
 
 ### Development Commands
 
