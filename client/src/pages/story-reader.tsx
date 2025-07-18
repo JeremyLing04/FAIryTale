@@ -38,7 +38,7 @@ export default function StoryReader() {
   // Get the chapter to display (either current chapter or specific reading chapter)
   const chapterToDisplay = readingChapter || story?.currentChapter;
   
-  const { data: currentChapter, isLoading: chapterLoading } = useQuery<StoryChapter>({
+  const { data: currentChapter, isLoading: chapterLoading, error: chapterError } = useQuery<StoryChapter>({
     queryKey: ["/api/stories", parseInt(id), "chapters", chapterToDisplay],
     enabled: !!chapterToDisplay,
   });
@@ -172,6 +172,34 @@ export default function StoryReader() {
     }
   };
 
+  // Auto-generate first chapter if it doesn't exist
+  const generateFirstChapter = async () => {
+    if (!story || !character || isGenerating) return;
+    
+    setIsGenerating(true);
+    try {
+      await generateChapterMutation.mutateAsync({
+        characterName: character.name,
+        characterType: character.type,
+        personality: character.personality,
+        genre: story.genre,
+        chapterNumber: 1,
+        characterImageUrl: character.imageUrl,
+        characterStats: {
+          courage: character.courage,
+          kindness: character.kindness,
+          wisdom: character.wisdom,
+          creativity: character.creativity,
+          strength: character.strength,
+          friendship: character.friendship,
+        },
+      });
+    } catch (error) {
+      console.error('Error generating first chapter:', error);
+      setIsGenerating(false);
+    }
+  };
+
   const handleStartNewStory = () => {
     setLocation("/character-creator");
   };
@@ -200,6 +228,31 @@ export default function StoryReader() {
             >
               <ArrowLeft className="mr-2 w-5 h-5" />
               Back to Gallery
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Check if first chapter doesn't exist and generate it
+  if (!currentChapter && chapterToDisplay === 1 && !chapterLoading && !isGenerating) {
+    // Show generation UI for first chapter
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl">
+          <CardContent className="p-12 text-center">
+            <Sparkles className="w-16 h-16 text-coral mx-auto mb-6" />
+            <h3 className="fredoka text-2xl text-darkgray mb-4">Ready to Begin Your Adventure?</h3>
+            <p className="text-gray-600 mb-8">
+              Let's create the first chapter of {story.title} featuring {character.name}!
+            </p>
+            <Button
+              onClick={generateFirstChapter}
+              className="bg-coral hover:bg-[#ff5252] text-white px-8 py-3 rounded-full fredoka"
+            >
+              <Sparkles className="mr-2 w-5 h-5" />
+              Start Story
             </Button>
           </CardContent>
         </Card>

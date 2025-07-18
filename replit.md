@@ -145,4 +145,4 @@ The image generator supports both system Python and virtual environments:
 - **January 16, 2025**: Increased Express body parser limit to 10MB to handle image uploads
 - **January 16, 2025**: Added continue button for chapters without choices
 
-The application is designed to be easily deployable on platforms like Replit, with automatic environment detection and appropriate build/serve strategies for each environment.
+The application is designed to be easily deployable on platforms like Replit, with automatic environment detection and appropriate build/serve strategies for each environment. With the removal of database dependencies, deployment is now simplified - just install Node.js, Ollama, and Python dependencies, then run the application.
