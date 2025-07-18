@@ -177,7 +177,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate image for the chapter
       let imageUrl = null;
       try {
-        imageUrl = await generateStoryImage(storyChapter.content, request.characterImageUrl, request.genre);
+        imageUrl = await generateStoryImage(storyChapter.content, request.characterImageUrl, request.genre, request.characterName);
       } catch (imageError) {
         console.error('Failed to generate image:', imageError);
       }

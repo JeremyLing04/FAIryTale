@@ -39,15 +39,22 @@ def generate_image():
         output_file = f"story_{timestamp}.png"
         output_path = os.path.join('generated_images', output_file)
         
-        # Build command for your existing app.py script
+        # Build command for your custom app.py script
         cmd = [
             'python', 'app.py',
-            '--genre', genre,
-            '--description', description,
-            '--output', output_path
+            '--story', description,
+            '--output_dir', 'generated_images',
+            '--seed', str(timestamp % 10000),  # Use timestamp for unique seeds
+            '--steps', '20',  # Faster generation for web use
+            '--scale', '7.5'
         ]
         
-        # Handle character image if provided
+        # Add character info if available
+        character_info = request.form.get('character_name', '')
+        if character_info:
+            cmd.extend(['--character', character_info])
+        
+        # Handle character reference image if provided
         temp_image_path = None
         if character_image:
             if character_image.startswith('data:image'):
@@ -58,12 +65,12 @@ def generate_image():
                     temp_image_path = os.path.join('generated_images', f'temp_{timestamp}.png')
                     with open(temp_image_path, 'wb') as f:
                         f.write(image_data)
-                    cmd.extend(['--input-image', temp_image_path])
+                    cmd.extend(['--reference', temp_image_path])
                 except Exception as e:
                     print(f"Error processing character image: {e}")
             else:
                 # Handle URL or file path
-                cmd.extend(['--input-image', character_image])
+                cmd.extend(['--reference', character_image])
         
         print(f"Running command: {' '.join(cmd)}")
         
@@ -74,16 +81,28 @@ def generate_image():
         if temp_image_path and os.path.exists(temp_image_path):
             os.remove(temp_image_path)
         
-        if result.returncode == 0 and os.path.exists(output_path):
-            # Get the external URL for the image
-            external_host = os.getenv('EXTERNAL_HOST', request.host)
-            image_url = f"http://{external_host}/images/{output_file}"
+        if result.returncode == 0:
+            # Your app.py generates multiple images (00.png, 01.png, etc.)
+            # Find the first generated image
+            generated_files = [f for f in os.listdir('generated_images') if f.startswith('00.png')]
             
-            return jsonify({
-                'success': True,
-                'image_url': image_url,
-                'local_path': output_path
-            })
+            if generated_files:
+                # Rename the first image to our expected filename
+                source_path = os.path.join('generated_images', generated_files[0])
+                if os.path.exists(source_path):
+                    os.rename(source_path, output_path)
+                
+                # Get the external URL for the image
+                external_host = os.getenv('EXTERNAL_HOST', request.host)
+                image_url = f"http://{external_host}/images/{output_file}"
+                
+                return jsonify({
+                    'success': True,
+                    'image_url': image_url,
+                    'local_path': output_path
+                })
+            else:
+                return jsonify({'error': 'No images were generated'}), 500
         else:
             error_msg = result.stderr or "Image generation failed"
             print(f"Generation failed: {error_msg}")

@@ -315,7 +315,7 @@ async function isPythonAvailable(): Promise<boolean> {
   }
 }
 
-export async function generateStoryImage(description: string, characterImageUrl?: string, genre: string = "cartoon"): Promise<string> {
+export async function generateStoryImage(description: string, characterImageUrl?: string, genre: string = "cartoon", characterName?: string): Promise<string> {
   // Check for remote image generation endpoint first
   const remoteImageUrl = process.env.REMOTE_IMAGE_URL;
   
@@ -324,6 +324,10 @@ export async function generateStoryImage(description: string, characterImageUrl?
       const formData = new FormData();
       formData.append('description', description);
       formData.append('genre', genre);
+      
+      // Use provided character name or default to 'hero'
+      const charName = characterName || 'hero';
+      formData.append('character_name', charName);
       
       if (characterImageUrl) {
         formData.append('character_image', characterImageUrl);
