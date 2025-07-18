@@ -254,6 +254,9 @@ Format your response as JSON with this structure:
         })
       };
     }
+    
+    // If we reach here without returning, use fallback
+    return generateFallbackStory(request);
   } catch (error: any) {
     console.error('Error generating story with Ollama:', error);
     // Fallback response
