@@ -323,8 +323,14 @@ export async function generateStoryImage(description: string, characterImageUrl?
     try {
       console.log('Using remote image generation service at:', remoteImageUrl);
       
+      // Truncate description to avoid 413 payload too large errors
+      const maxDescLength = 200;
+      const truncatedDesc = description.length > maxDescLength 
+        ? description.substring(0, maxDescLength).trim() + "..."
+        : description;
+      
       const formData = new FormData();
-      formData.append('description', description);
+      formData.append('description', truncatedDesc);
       formData.append('genre', genre);
       if (characterName) formData.append('character_name', characterName);
       if (characterImageUrl) formData.append('character_image_url', characterImageUrl);
@@ -341,7 +347,12 @@ export async function generateStoryImage(description: string, characterImageUrl?
       } else {
         const errorText = await response.text();
         console.error('Remote image generation failed:', response.status, errorText);
-        // If remote fails, still try to return something useful
+        
+        // If it's a 413 error, the description was too long
+        if (response.status === 413) {
+          console.log('Payload too large - story description was truncated but still too big');
+        }
+        
         return "";
       }
     } catch (error) {

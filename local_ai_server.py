@@ -64,6 +64,10 @@ def generate_image():
         import re
         story_prompt = re.sub(r'[^\x00-\x7F]+', ' ', story_prompt)
         
+        # Further truncate if still too long to avoid 413 errors
+        if len(story_prompt) > 150:
+            story_prompt = story_prompt[:150].rsplit(' ', 1)[0] + "..."
+        
         # Generate unique timestamp
         timestamp = int(time.time())
         
