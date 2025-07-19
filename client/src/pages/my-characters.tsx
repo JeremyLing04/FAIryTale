@@ -1,22 +1,53 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import { type Character } from "@shared/schema";
 import CharacterCard from "@/components/character-card";
 import LoadingAnimation from "@/components/loading-animation";
-import { Users, Plus, ArrowLeft } from "lucide-react";
+import { Users, Plus, ArrowLeft, Trash2 } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function MyCharacters() {
   const [_, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const { data: characters, isLoading: charactersLoading } = useQuery<Character[]>({
     queryKey: ["/api/characters"],
   });
 
+  const deleteCharacterMutation = useMutation({
+    mutationFn: async (characterId: number) => {
+      const response = await apiRequest("DELETE", `/api/characters/${characterId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
+      toast({
+        title: "Character Deleted",
+        description: "Your character has been deleted successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete character. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleCharacterSelect = (character: Character) => {
     // Navigate to character creator with the selected character to create a new story
     setLocation(`/character-creator?characterId=${character.id}&step=story`);
+  };
+
+  const handleDeleteCharacter = (character: Character) => {
+    if (window.confirm(`Are you sure you want to delete ${character.name}? This action cannot be undone.`)) {
+      deleteCharacterMutation.mutate(character.id);
+    }
   };
 
   if (charactersLoading) {
@@ -60,11 +91,21 @@ export default function MyCharacters() {
         {characters && characters.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {characters.map((character) => (
-              <CharacterCard 
-                key={character.id} 
-                character={character} 
-                onSelect={handleCharacterSelect} 
-              />
+              <div key={character.id} className="relative group">
+                <CharacterCard 
+                  character={character} 
+                  onSelect={handleCharacterSelect} 
+                />
+                <Button
+                  onClick={() => handleDeleteCharacter(character)}
+                  variant="outline"
+                  size="sm"
+                  className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-500 text-white border-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-2"
+                  disabled={deleteCharacterMutation.isPending}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
             ))}
           </div>
         ) : (

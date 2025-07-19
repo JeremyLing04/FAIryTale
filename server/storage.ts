@@ -13,12 +13,14 @@ export interface IStorage {
   getCharacter(id: number): Promise<Character | undefined>;
   getAllCharacters(): Promise<Character[]>;
   updateCharacter(id: number, updates: Partial<Character>): Promise<Character | undefined>;
+  deleteCharacter(id: number): Promise<boolean>;
   
   // Story operations
   createStory(story: InsertStory): Promise<Story>;
   getStory(id: number): Promise<Story | undefined>;
   getAllStories(): Promise<Story[]>;
   updateStory(id: number, updates: Partial<Story>): Promise<Story | undefined>;
+  deleteStory(id: number): Promise<boolean>;
   
   // Story chapter operations
   createStoryChapter(chapter: InsertStoryChapter): Promise<StoryChapter>;
@@ -108,6 +110,24 @@ export class MemStorage implements IStorage {
     return Array.from(this.storyChapters.values())
       .filter(chapter => chapter.storyId === storyId)
       .sort((a, b) => a.chapterNumber - b.chapterNumber);
+  }
+
+  async deleteCharacter(id: number): Promise<boolean> {
+    return this.characters.delete(id);
+  }
+
+  async deleteStory(id: number): Promise<boolean> {
+    // Delete the story
+    const deleted = this.stories.delete(id);
+    
+    // Delete all chapters for this story
+    const chaptersToDelete = Array.from(this.storyChapters.entries())
+      .filter(([key, chapter]) => chapter.storyId === id)
+      .map(([key]) => key);
+    
+    chaptersToDelete.forEach(key => this.storyChapters.delete(key));
+    
+    return deleted;
   }
 }
 

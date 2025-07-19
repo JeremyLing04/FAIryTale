@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
@@ -6,10 +6,14 @@ import { type Story, type Character } from "@shared/schema";
 import StoryCard from "@/components/story-card";
 import CharacterCard from "@/components/character-card";
 import LoadingAnimation from "@/components/loading-animation";
-import { BookOpen, Users, Wand2, Plus } from "lucide-react";
+import { BookOpen, Users, Wand2, Plus, Trash2, Share2 } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function StoryGallery() {
   const [_, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const { data: stories, isLoading: storiesLoading } = useQuery<Story[]>({
     queryKey: ["/api/stories"],
@@ -19,9 +23,61 @@ export default function StoryGallery() {
     queryKey: ["/api/characters"],
   });
 
+  const deleteStoryMutation = useMutation({
+    mutationFn: async (storyId: number) => {
+      const response = await apiRequest("DELETE", `/api/stories/${storyId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/stories"] });
+      toast({
+        title: "Story Deleted",
+        description: "Your story has been deleted successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete story. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const shareStoryMutation = useMutation({
+    mutationFn: async (storyId: number) => {
+      const response = await apiRequest("GET", `/api/stories/${storyId}/share`);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      navigator.clipboard.writeText(data.shareUrl);
+      toast({
+        title: "Share Link Copied!",
+        description: "The story share link has been copied to your clipboard.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to generate share link. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleCharacterSelect = (character: Character) => {
     // Navigate to character creator with the selected character to create a new story
     setLocation(`/character-creator?characterId=${character.id}&step=story`);
+  };
+
+  const handleDeleteStory = (story: Story) => {
+    if (window.confirm(`Are you sure you want to delete "${story.title}"? This action cannot be undone.`)) {
+      deleteStoryMutation.mutate(story.id);
+    }
+  };
+
+  const handleShareStory = (story: Story) => {
+    shareStoryMutation.mutate(story.id);
   };
 
   if (storiesLoading || charactersLoading) {
@@ -65,7 +121,29 @@ export default function StoryGallery() {
           {stories && stories.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {stories.map((story) => (
-                <StoryCard key={story.id} story={story} />
+                <div key={story.id} className="relative group">
+                  <StoryCard story={story} />
+                  <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      onClick={() => handleShareStory(story)}
+                      variant="outline"
+                      size="sm"
+                      className="bg-turquoise/80 hover:bg-turquoise text-white border-turquoise p-2"
+                      disabled={shareStoryMutation.isPending}
+                    >
+                      <Share2 className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      onClick={() => handleDeleteStory(story)}
+                      variant="outline"
+                      size="sm"
+                      className="bg-red-500/80 hover:bg-red-500 text-white border-red-500 p-2"
+                      disabled={deleteStoryMutation.isPending}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
               ))}
             </div>
           ) : (

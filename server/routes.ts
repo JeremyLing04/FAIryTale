@@ -177,11 +177,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate image for the chapter with character reference
       let imageUrl = null;
       try {
-        // Get character data to retrieve image reference
+        // Always get character data to ensure image reference is available
         const character = await storage.getCharacter(story.characterId);
         const characterImageUrl = character?.imageUrl || request.characterImageUrl;
         
         console.log('Generating image with character reference:', characterImageUrl);
+        console.log('Character data:', character ? `${character.name} (${character.type})` : 'No character found');
+        
         // Use scene description if available, otherwise use story content
         const imageDescription = storyChapter.sceneDescription || storyChapter.content;
         imageUrl = await generateStoryImage(imageDescription, characterImageUrl, request.genre, request.characterName, request.characterType);
@@ -252,6 +254,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error updating character stats:', error);
       res.status(500).json({ message: "Failed to update character stats" });
+    }
+  });
+
+  // Delete character route
+  app.delete("/api/characters/:characterId", async (req, res) => {
+    try {
+      const characterId = parseInt(req.params.characterId);
+      const deleted = await storage.deleteCharacter(characterId);
+      
+      if (deleted) {
+        res.json({ message: "Character deleted successfully" });
+      } else {
+        res.status(404).json({ message: "Character not found" });
+      }
+    } catch (error) {
+      console.error('Error deleting character:', error);
+      res.status(500).json({ message: "Failed to delete character" });
+    }
+  });
+
+  // Delete story route
+  app.delete("/api/stories/:storyId", async (req, res) => {
+    try {
+      const storyId = parseInt(req.params.storyId);
+      const deleted = await storage.deleteStory(storyId);
+      
+      if (deleted) {
+        res.json({ message: "Story deleted successfully" });
+      } else {
+        res.status(404).json({ message: "Story not found" });
+      }
+    } catch (error) {
+      console.error('Error deleting story:', error);
+      res.status(500).json({ message: "Failed to delete story" });
+    }
+  });
+
+  // Share story route
+  app.get("/api/stories/:storyId/share", async (req, res) => {
+    try {
+      const storyId = parseInt(req.params.storyId);
+      const story = await storage.getStory(storyId);
+      
+      if (!story) {
+        return res.status(404).json({ message: "Story not found" });
+      }
+
+      const character = await storage.getCharacter(story.characterId);
+      const chapters = await storage.getStoryChapters(storyId);
+      
+      const shareData = {
+        story,
+        character,
+        chapters,
+        shareUrl: `${req.protocol}://${req.get('host')}/shared/${storyId}`,
+        createdAt: new Date().toISOString()
+      };
+      
+      res.json(shareData);
+    } catch (error) {
+      console.error('Error sharing story:', error);
+      res.status(500).json({ message: "Failed to share story" });
     }
   });
 

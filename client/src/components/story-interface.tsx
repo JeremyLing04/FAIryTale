@@ -73,11 +73,13 @@ export default function StoryInterface({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
               <div>
                 {chapter.imageUrl ? (
-                  <img 
-                    src={chapter.imageUrl} 
-                    alt={`Chapter ${currentChapter}`}
-                    className="w-full h-64 object-cover rounded-xl shadow-lg"
-                  />
+                  <div className="w-full h-64 bg-gray-100 rounded-xl overflow-hidden shadow-lg">
+                    <img 
+                      src={chapter.imageUrl} 
+                      alt={`Chapter ${currentChapter}`}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
                 ) : (
                   <div className="w-full h-64 bg-gradient-to-br from-[hsl(300,47%,75%)] to-purple-300 rounded-xl shadow-lg flex items-center justify-center">
                     <Heart className="w-16 h-16 text-white/70" />
@@ -116,16 +118,16 @@ export default function StoryInterface({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Button
                 onClick={() => onChoiceSelect('optionA')}
-                className="story-choice-button bg-[hsl(44,100%,80%)] hover:bg-[#ffb300] rounded-2xl p-6 h-auto text-left shadow-lg"
+                className="story-choice-button bg-[hsl(44,100%,80%)] hover:bg-[#ffb300] rounded-2xl p-4 min-h-[120px] h-auto text-left shadow-lg whitespace-normal"
                 disabled={isLoading}
               >
-                <div className="flex items-start space-x-4">
-                  <div className="text-3xl">🌟</div>
-                  <div>
-                    <h5 className="fredoka text-xl text-darkgray mb-2">
+                <div className="flex items-start space-x-3 w-full">
+                  <div className="text-2xl flex-shrink-0">🌟</div>
+                  <div className="flex-1 min-w-0">
+                    <h5 className="fredoka text-lg text-darkgray mb-2 break-words">
                       {chapter.choices.optionA.text}
                     </h5>
-                    <p className="text-darkgray text-sm">
+                    <p className="text-darkgray text-sm break-words">
                       {chapter.choices.optionA.description}
                     </p>
                   </div>
@@ -134,16 +136,16 @@ export default function StoryInterface({
 
               <Button
                 onClick={() => onChoiceSelect('optionB')}
-                className="story-choice-button bg-[hsl(300,47%,75%)] hover:bg-[#ba68c8] rounded-2xl p-6 h-auto text-left shadow-lg"
+                className="story-choice-button bg-[hsl(300,47%,75%)] hover:bg-[#ba68c8] rounded-2xl p-4 min-h-[120px] h-auto text-left shadow-lg whitespace-normal"
                 disabled={isLoading}
               >
-                <div className="flex items-start space-x-4">
-                  <div className="text-3xl">🌈</div>
-                  <div>
-                    <h5 className="fredoka text-xl text-darkgray mb-2">
+                <div className="flex items-start space-x-3 w-full">
+                  <div className="text-2xl flex-shrink-0">🌈</div>
+                  <div className="flex-1 min-w-0">
+                    <h5 className="fredoka text-lg text-darkgray mb-2 break-words">
                       {chapter.choices.optionB.text}
                     </h5>
-                    <p className="text-darkgray text-sm">
+                    <p className="text-darkgray text-sm break-words">
                       {chapter.choices.optionB.description}
                     </p>
                   </div>

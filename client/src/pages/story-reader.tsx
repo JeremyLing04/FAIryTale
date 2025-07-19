@@ -16,7 +16,7 @@ import { type Story, type Character, type StoryChapter } from "@shared/schema";
 import StoryInterface from "@/components/story-interface";
 import LoadingAnimation from "@/components/loading-animation";
 import CharacterStats from "@/components/character-stats";
-import { ArrowLeft, BookOpen, Sparkles, CheckCircle, ChevronDown } from "lucide-react";
+import { ArrowLeft, BookOpen, Sparkles, CheckCircle, ChevronDown, Share2, Trash2 } from "lucide-react";
 
 export default function StoryReader() {
   const { id } = useParams() as { id: string };
@@ -174,6 +174,59 @@ export default function StoryReader() {
 
   const handleStartNewStory = () => {
     setLocation("/character-creator");
+  };
+
+  const deleteStoryMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("DELETE", `/api/stories/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Story Deleted",
+        description: "Your story has been deleted successfully.",
+      });
+      setLocation("/gallery");
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete story. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const shareStoryMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("GET", `/api/stories/${id}/share`);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Copy share URL to clipboard
+      navigator.clipboard.writeText(data.shareUrl);
+      toast({
+        title: "Share Link Copied!",
+        description: "The story share link has been copied to your clipboard.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to generate share link. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteStory = () => {
+    if (window.confirm("Are you sure you want to delete this story? This action cannot be undone.")) {
+      deleteStoryMutation.mutate();
+    }
+  };
+
+  const handleShareStory = () => {
+    shareStoryMutation.mutate();
   };
 
   if (storyLoading || characterLoading || chapterLoading) {
@@ -349,6 +402,34 @@ export default function StoryReader() {
                 <p className="text-sm text-gray-600 capitalize">{character.type}</p>
               </div>
               <CharacterStats character={character} showTitle={false} />
+              
+              {/* Story Actions */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h4 className="fredoka text-sm text-gray-600 mb-3 text-center">Story Actions</h4>
+                <div className="flex flex-col space-y-2">
+                  <Button
+                    onClick={handleShareStory}
+                    variant="outline"
+                    size="sm"
+                    className="text-turquoise border-turquoise hover:bg-turquoise hover:text-white"
+                    disabled={shareStoryMutation.isPending}
+                  >
+                    <Share2 className="mr-2 w-4 h-4" />
+                    {shareStoryMutation.isPending ? "Sharing..." : "Share Story"}
+                  </Button>
+                  
+                  <Button
+                    onClick={handleDeleteStory}
+                    variant="outline"
+                    size="sm"
+                    className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white"
+                    disabled={deleteStoryMutation.isPending}
+                  >
+                    <Trash2 className="mr-2 w-4 h-4" />
+                    {deleteStoryMutation.isPending ? "Deleting..." : "Delete Story"}
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>

@@ -18,6 +18,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/character-creator" component={CharacterCreator} />
       <Route path="/story/:id" component={StoryReader} />
+      <Route path="/shared/:id" component={StoryReader} />
       <Route path="/gallery" component={StoryGallery} />
       <Route path="/my-stories" component={MyStories} />
       <Route path="/my-characters" component={MyCharacters} />
