@@ -353,7 +353,7 @@ export async function generateStoryImage(description: string, characterImageUrl?
       const formData = new FormData();
       formData.append('description', imagePrompt);
       formData.append('genre', genre);
-      if (characterName) formData.append('character_name', `${characterName} ${characterType || 'character'}`); // Include character type
+      if (characterName) formData.append('character_name', `${characterName} the ${characterType || 'character'}`); // Include character type
       
       // Handle character reference image for IP-Adapter
       if (characterImageUrl) {
